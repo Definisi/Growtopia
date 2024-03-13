@@ -1,4 +1,4 @@
-#include "gui.h"
+#include "gui.hpp"
 
 
 
@@ -248,4 +248,16 @@ void gui::destroy() noexcept
 	destroy_imgui();
 	destroy_device();
 	destroy_hwindow();
+}
+
+void TyoGui::create_window(const char* judul, ImVec2 size, ImVec2 pos, bool* window_open, ImGuiWindowFlags flags)
+{
+	ImGui::SetNextWindowPos(pos);
+	ImGui::SetNextWindowSize(size);
+	ImGui::Begin(judul, window_open, flags);
+}
+
+void TyoGui::end_window()
+{
+	ImGui::End();
 }
