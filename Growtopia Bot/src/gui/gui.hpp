@@ -1,19 +1,21 @@
+#pragma once
 #include <memory>
+#include <vector>
 
 #include <d3d9.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_dx9.h>
 #include <imgui/imgui_impl_win32.h>
 
-class TyoGui : public std::enable_shared_from_this<TyoGui> {
-public:
-	void create_window(const char* judul, ImVec2 size, ImVec2 pos, bool* window_open, ImGuiWindowFlags flags);
-	void end_window();
-};
+namespace gui { 
+	using tab_callback = void (*)();
+	inline std::vector<const char*> tab_list = { "Main" };
+	
+	void render_tabs_from_vector();
+	void render_tab_item(const char* label, tab_callback callback);
+	void tab_main();
+	inline std::vector<tab_callback> tab_callbacks = { tab_main };
 
-
-namespace gui
-{
 	// constant window size
 	constexpr int width = 500;
 	constexpr int height = 300;

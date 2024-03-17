@@ -1,52 +1,63 @@
-#define CURL_STATICLIB
 
+#include <gui/gui.hpp>
 
 #include <gui/gui.hpp>
 #include <curl/curl.h>
+
+#include <auth/auth.hpp>
+
+#include <utils/encryption/SkCrypt_custom.hpp>
+
+#include <client/client.hpp>
 
 #include <thread>
 #include <iostream>
 
 
-static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
-{
-    ((std::string*)userp)->append((char*)contents, size * nmemb);
-    return size * nmemb;
-}
+std::vector<std::shared_ptr<Client>> clients;
+
 
 
 int main()
 {
-
-
-	CURL* curl;
-	CURLcode res;
-	std::string readBuffer;
-
-	curl = curl_easy_init();
-	if (curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, "https://api.ipify.org/?format=text");
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-		res = curl_easy_perform(curl);
-		curl_easy_cleanup(curl);
-
-		std::cout << readBuffer << std::endl;
+	if (enet_initialize() != 0)
+	{
+		fprintf(stderr, "An error occurred while initializing ENet.\n");
+		return EXIT_FAILURE;
 	}
 
+	std::cout << skCrypt("hai").decrypt() << std::endl;
+	auth::init();
+	
 	// create gui
 	gui::create("Growtopia Bot", "GrowtopiaBotClass001");
 
-	TyoGui m_gui;
+	std::shared_ptr<Client> client1 = std::make_shared<Client>();
+	clients.push_back(client1);
+
+	//gui::tab_callbacks.push_back(gui::tab_main);
+	
+	bool sekali_aja = true;
 
 	while (gui::is_running)
 	{
+		clients.back()->service_poll();
+
+		if (sekali_aja) {
+			clients.back()->connect();
+
+			sekali_aja = false;
+		}
+
 		gui::begin_render();
-		m_gui.create_window("Ini Judul", ImVec2(100, 100), ImVec2(0, 0), &gui::is_running, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
+		
+		ImGui::SetNextWindowPos(ImVec2(0,0));
+		ImGui::SetNextWindowSize(ImVec2(gui::width, gui::height));
+		ImGui::Begin("Growtopia", &gui::is_running, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
 
-		ImGui::Text("");
+		gui::render_tabs_from_vector();
 
-		m_gui.end_window();
+		ImGui::End();
 
 		gui::end_render();
 

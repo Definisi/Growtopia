@@ -19,9 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\auth\auth.hpp" />
     <ClInclude Include="src\client\client.hpp" />
     <ClInclude Include="src\client\login_info.hpp" />
+    <ClInclude Include="src\utils\encryption\SkCrypt_custom.hpp" />
+    <ClInclude Include="src\utils\generate_random_mac.hpp" />
     <ClInclude Include="src\gui\gui.hpp" />
+    <ClInclude Include="src\utils\klv_hash.hpp" />
+    <ClInclude Include="src\utils\sha256.hpp" />
+    <ClInclude Include="src\utils\md5.hpp" />
     <ClInclude Include="src\utils\generate_random_hex.hpp" />
     <ClInclude Include="src\utils\generate_random_uuid.hpp" />
     <ClInclude Include="src\utils\get_current_time.hpp" />
@@ -46,6 +52,144 @@
     <ClInclude Include="vendor\imgui\imstb_rectpack.h" />
     <ClInclude Include="vendor\imgui\imstb_textedit.h" />
     <ClInclude Include="vendor\imgui\imstb_truetype.h" />
+    <ClInclude Include="vendor\openssl\aes.h" />
+    <ClInclude Include="vendor\openssl\asn1.h" />
+    <ClInclude Include="vendor\openssl\asn1err.h" />
+    <ClInclude Include="vendor\openssl\asn1t.h" />
+    <ClInclude Include="vendor\openssl\asn1_mac.h" />
+    <ClInclude Include="vendor\openssl\async.h" />
+    <ClInclude Include="vendor\openssl\asyncerr.h" />
+    <ClInclude Include="vendor\openssl\bio.h" />
+    <ClInclude Include="vendor\openssl\bioerr.h" />
+    <ClInclude Include="vendor\openssl\blowfish.h" />
+    <ClInclude Include="vendor\openssl\bn.h" />
+    <ClInclude Include="vendor\openssl\bnerr.h" />
+    <ClInclude Include="vendor\openssl\buffer.h" />
+    <ClInclude Include="vendor\openssl\buffererr.h" />
+    <ClInclude Include="vendor\openssl\camellia.h" />
+    <ClInclude Include="vendor\openssl\cast.h" />
+    <ClInclude Include="vendor\openssl\cmac.h" />
+    <ClInclude Include="vendor\openssl\cmp.h" />
+    <ClInclude Include="vendor\openssl\cmperr.h" />
+    <ClInclude Include="vendor\openssl\cmp_util.h" />
+    <ClInclude Include="vendor\openssl\cms.h" />
+    <ClInclude Include="vendor\openssl\cmserr.h" />
+    <ClInclude Include="vendor\openssl\comp.h" />
+    <ClInclude Include="vendor\openssl\comperr.h" />
+    <ClInclude Include="vendor\openssl\conf.h" />
+    <ClInclude Include="vendor\openssl\conferr.h" />
+    <ClInclude Include="vendor\openssl\configuration.h" />
+    <ClInclude Include="vendor\openssl\conftypes.h" />
+    <ClInclude Include="vendor\openssl\conf_api.h" />
+    <ClInclude Include="vendor\openssl\core.h" />
+    <ClInclude Include="vendor\openssl\core_dispatch.h" />
+    <ClInclude Include="vendor\openssl\core_names.h" />
+    <ClInclude Include="vendor\openssl\core_object.h" />
+    <ClInclude Include="vendor\openssl\crmf.h" />
+    <ClInclude Include="vendor\openssl\crmferr.h" />
+    <ClInclude Include="vendor\openssl\crypto.h" />
+    <ClInclude Include="vendor\openssl\cryptoerr.h" />
+    <ClInclude Include="vendor\openssl\cryptoerr_legacy.h" />
+    <ClInclude Include="vendor\openssl\ct.h" />
+    <ClInclude Include="vendor\openssl\cterr.h" />
+    <ClInclude Include="vendor\openssl\decoder.h" />
+    <ClInclude Include="vendor\openssl\decodererr.h" />
+    <ClInclude Include="vendor\openssl\des.h" />
+    <ClInclude Include="vendor\openssl\dh.h" />
+    <ClInclude Include="vendor\openssl\dherr.h" />
+    <ClInclude Include="vendor\openssl\dsa.h" />
+    <ClInclude Include="vendor\openssl\dsaerr.h" />
+    <ClInclude Include="vendor\openssl\dtls1.h" />
+    <ClInclude Include="vendor\openssl\ebcdic.h" />
+    <ClInclude Include="vendor\openssl\ec.h" />
+    <ClInclude Include="vendor\openssl\ecdh.h" />
+    <ClInclude Include="vendor\openssl\ecdsa.h" />
+    <ClInclude Include="vendor\openssl\ecerr.h" />
+    <ClInclude Include="vendor\openssl\encoder.h" />
+    <ClInclude Include="vendor\openssl\encodererr.h" />
+    <ClInclude Include="vendor\openssl\engine.h" />
+    <ClInclude Include="vendor\openssl\engineerr.h" />
+    <ClInclude Include="vendor\openssl\err.h" />
+    <ClInclude Include="vendor\openssl\ess.h" />
+    <ClInclude Include="vendor\openssl\esserr.h" />
+    <ClInclude Include="vendor\openssl\evp.h" />
+    <ClInclude Include="vendor\openssl\evperr.h" />
+    <ClInclude Include="vendor\openssl\e_os2.h" />
+    <ClInclude Include="vendor\openssl\fipskey.h" />
+    <ClInclude Include="vendor\openssl\fips_names.h" />
+    <ClInclude Include="vendor\openssl\hmac.h" />
+    <ClInclude Include="vendor\openssl\http.h" />
+    <ClInclude Include="vendor\openssl\httperr.h" />
+    <ClInclude Include="vendor\openssl\idea.h" />
+    <ClInclude Include="vendor\openssl\kdf.h" />
+    <ClInclude Include="vendor\openssl\kdferr.h" />
+    <ClInclude Include="vendor\openssl\lhash.h" />
+    <ClInclude Include="vendor\openssl\macros.h" />
+    <ClInclude Include="vendor\openssl\md2.h" />
+    <ClInclude Include="vendor\openssl\md4.h" />
+    <ClInclude Include="vendor\openssl\md5.h" />
+    <ClInclude Include="vendor\openssl\mdc2.h" />
+    <ClInclude Include="vendor\openssl\modes.h" />
+    <ClInclude Include="vendor\openssl\objects.h" />
+    <ClInclude Include="vendor\openssl\objectserr.h" />
+    <ClInclude Include="vendor\openssl\obj_mac.h" />
+    <ClInclude Include="vendor\openssl\ocsp.h" />
+    <ClInclude Include="vendor\openssl\ocsperr.h" />
+    <ClInclude Include="vendor\openssl\opensslconf.h" />
+    <ClInclude Include="vendor\openssl\opensslv.h" />
+    <ClInclude Include="vendor\openssl\ossl_typ.h" />
+    <ClInclude Include="vendor\openssl\params.h" />
+    <ClInclude Include="vendor\openssl\param_build.h" />
+    <ClInclude Include="vendor\openssl\pem.h" />
+    <ClInclude Include="vendor\openssl\pem2.h" />
+    <ClInclude Include="vendor\openssl\pemerr.h" />
+    <ClInclude Include="vendor\openssl\pkcs12.h" />
+    <ClInclude Include="vendor\openssl\pkcs12err.h" />
+    <ClInclude Include="vendor\openssl\pkcs7.h" />
+    <ClInclude Include="vendor\openssl\pkcs7err.h" />
+    <ClInclude Include="vendor\openssl\proverr.h" />
+    <ClInclude Include="vendor\openssl\provider.h" />
+    <ClInclude Include="vendor\openssl\prov_ssl.h" />
+    <ClInclude Include="vendor\openssl\quic.h" />
+    <ClInclude Include="vendor\openssl\rand.h" />
+    <ClInclude Include="vendor\openssl\randerr.h" />
+    <ClInclude Include="vendor\openssl\rc2.h" />
+    <ClInclude Include="vendor\openssl\rc4.h" />
+    <ClInclude Include="vendor\openssl\rc5.h" />
+    <ClInclude Include="vendor\openssl\ripemd.h" />
+    <ClInclude Include="vendor\openssl\rsa.h" />
+    <ClInclude Include="vendor\openssl\rsaerr.h" />
+    <ClInclude Include="vendor\openssl\safestack.h" />
+    <ClInclude Include="vendor\openssl\seed.h" />
+    <ClInclude Include="vendor\openssl\self_test.h" />
+    <ClInclude Include="vendor\openssl\sha.h" />
+    <ClInclude Include="vendor\openssl\srp.h" />
+    <ClInclude Include="vendor\openssl\srtp.h" />
+    <ClInclude Include="vendor\openssl\ssl.h" />
+    <ClInclude Include="vendor\openssl\ssl2.h" />
+    <ClInclude Include="vendor\openssl\ssl3.h" />
+    <ClInclude Include="vendor\openssl\sslerr.h" />
+    <ClInclude Include="vendor\openssl\sslerr_legacy.h" />
+    <ClInclude Include="vendor\openssl\stack.h" />
+    <ClInclude Include="vendor\openssl\store.h" />
+    <ClInclude Include="vendor\openssl\storeerr.h" />
+    <ClInclude Include="vendor\openssl\symhacks.h" />
+    <ClInclude Include="vendor\openssl\tls1.h" />
+    <ClInclude Include="vendor\openssl\trace.h" />
+    <ClInclude Include="vendor\openssl\ts.h" />
+    <ClInclude Include="vendor\openssl\tserr.h" />
+    <ClInclude Include="vendor\openssl\txt_db.h" />
+    <ClInclude Include="vendor\openssl\types.h" />
+    <ClInclude Include="vendor\openssl\ui.h" />
+    <ClInclude Include="vendor\openssl\uierr.h" />
+    <ClInclude Include="vendor\openssl\whrlpool.h" />
+    <ClInclude Include="vendor\openssl\x509.h" />
+    <ClInclude Include="vendor\openssl\x509err.h" />
+    <ClInclude Include="vendor\openssl\x509v3.h" />
+    <ClInclude Include="vendor\openssl\x509v3err.h" />
+    <ClInclude Include="vendor\openssl\x509_vfy.h" />
+    <ClInclude Include="vendor\openssl\__DECC_INCLUDE_EPILOGUE.H" />
+    <ClInclude Include="vendor\openssl\__DECC_INCLUDE_PROLOGUE.H" />
     <ClInclude Include="vendor\proton\hash.hpp" />
     <ClInclude Include="vendor\proton\packet.hpp" />
     <ClInclude Include="vendor\proton\text_scanner.hpp" />
@@ -53,10 +197,16 @@
     <ClInclude Include="vendor\proton\vector.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\auth\auth.cpp" />
+    <ClCompile Include="src\auth\auth_data.hpp" />
     <ClCompile Include="src\client\client.cpp" />
     <ClCompile Include="src\client\login_info.cpp" />
+    <ClCompile Include="src\utils\generate_random_mac.cpp" />
     <ClCompile Include="src\gui\gui.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\utils\klv_hash.cpp" />
+    <ClCompile Include="src\utils\md5.cpp" />
+    <ClCompile Include="src\utils\sha256.cpp" />
     <ClCompile Include="src\utils\generate_random_hex.cpp" />
     <ClCompile Include="src\utils\generate_random_uuid.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
@@ -132,7 +282,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>$(ProjectDir)\vendor\curl\lib\$(Configuration);$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <LibraryPath>$(ProjectDir)\vendor\openssl\lib;$(ProjectDir)\vendor\curl\lib\$(Configuration);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <IncludePath>$(ProjectDir)\vendor;$(ProjectDir)\src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -140,7 +290,7 @@
     <OutDir>bin\$(Platform)\$(Configuration)\</OutDir>
     <IncludePath>$(ProjectDir)\vendor;$(ProjectDir)\src;$(IncludePath)</IncludePath>
     <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
-    <LibraryPath>$(ProjectDir)\vendor\curl\lib\$(Configuration);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <LibraryPath>$(ProjectDir)\vendor\openssl\lib;$(ProjectDir)\vendor\curl\lib\$(Configuration);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -178,13 +328,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;libcurl_a_debug.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;libcurl_a.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -193,7 +344,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\vendor</AdditionalIncludeDirectories>
@@ -203,8 +354,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;libcurl_a.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;libcurl_a.lib;Normaliz.lib;Ws2_32.lib;Wldap32.lib;Crypt32.lib;advapi32.lib;libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
