@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
 
-namespace proton {
-	int32_t hash(const char* data, size_t length = 0) {
+namespace hash {
+	int32_t proton(const char* data, size_t length = 0) {
 	    int32_t hash{ 0x55555555 };
 	    
 	    if (data) {
