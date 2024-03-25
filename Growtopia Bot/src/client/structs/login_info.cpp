@@ -9,12 +9,23 @@
 #include <proton/text_scanner.hpp>
 
 #include <utils/generate_random_uuid.hpp>
+#include <utils/random.hpp>
+#include <utils/generate_mac.hpp>
+#include <utils/generate_klv.hpp>
+#include <utils/hash_str.hpp>
 
 LoginInfo::LoginInfo() {
-	m_gid = generate_random_uuid();
 	m_rid = generate_random_hex(32);
+	m_wk = generate_random_hex(32);
+	m_hash = hash_str(std::to_string(random(100000, 250000)) + "RT");
+	m_mac = generate_mac();
+	m_hash2 = hash_str(m_mac + "RT");
+
+
 	std::transform(m_rid.begin(), m_rid.end(), m_rid.begin(), ::toupper);
-	m_hash = hash::proton(m_gid.c_str(), m_gid.length());
+	std::transform(m_wk.begin(), m_wk.end(), m_wk.begin(), ::toupper);
+
+	m_klv = generate_klv(m_game_version, m_protocol, m_hash, m_rid);
 }
 
 size_t LoginInfo::write_callback_impl(char* ptr, size_t size, size_t nmemb) {
@@ -47,7 +58,7 @@ bool LoginInfo::request_server_data() {
 		}
 	}
 
-	curl_easy_setopt(curl, CURLOPT_URL, "http://79.137.35.236/growtopia/server_data.php");
+	curl_easy_setopt(curl, CURLOPT_URL, "https://www.growtopia1.com/growtopia/server_data.php");
 
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 
@@ -65,6 +76,9 @@ bool LoginInfo::request_server_data() {
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
 
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
 
 	CURLcode res = curl_easy_perform(curl);
 
@@ -112,8 +126,15 @@ void LoginInfo::reset() {
 	m_port = 0;
 	m_meta = "";
 
-	m_gid = generate_random_uuid();
 	m_rid = generate_random_hex(32);
+	m_wk = generate_random_hex(32);
+	m_hash = hash_str(std::to_string(random(100000, 250000)) + "RT");
+	m_mac = generate_mac();
+	m_hash2 = hash_str(m_mac + "RT");
+
+
 	std::transform(m_rid.begin(), m_rid.end(), m_rid.begin(), ::toupper);
-	m_hash = hash::proton(m_gid.c_str(), m_gid.length());
+	std::transform(m_wk.begin(), m_wk.end(), m_wk.begin(), ::toupper);
+
+	m_klv = generate_klv(m_game_version, m_protocol, m_hash, m_rid);
 }

@@ -111,7 +111,7 @@ bool Client::connect() {
 	if (enet_host_compress_with_range_coder(m_host) != 0)
 		return false;
 
-	m_host->usingNewPacket = 0;
+	m_host->usingNewPacket = 1;
 	m_host->checksum = enet_crc32;
 
 	if (m_login_info.m_socks5_info.ip != nullptr && (int)m_login_info.m_socks5_info.port > 0 && m_login_info.m_socks5_info.port < 65536) {
@@ -285,22 +285,24 @@ void Client::login() {
 		text.add("f", std::to_string(m_login_info.m_f));
 		text.add("protocol", std::to_string(m_login_info.m_protocol));
 		text.add("game_version", std::format("{:.2f}", m_login_info.m_game_version));
+		text.add("fz", std::to_string(m_login_info.m_fz));
 		text.add("lmode", std::to_string(m_login_info.m_lmode));
 		text.add("cbits", std::to_string(m_login_info.m_cbits));
 		text.add("player_age", std::to_string(m_login_info.m_player_age));
 		text.add("GDPR", std::to_string(m_login_info.m_gdpr));
 		text.add("category", m_login_info.m_category);
 		text.add("totalPlaytime", std::to_string(m_login_info.m_total_playtime));
-		text.add("gid", m_login_info.m_gid);
-		text.add("tr", std::to_string(m_login_info.m_tr));
+		text.add("klv", m_login_info.m_klv);
+		text.add("hash2", std::to_string(m_login_info.m_hash2));
 		text.add("meta", m_login_info.m_meta);
 		text.add("fhash", std::to_string(m_login_info.m_fhash));
 		text.add("rid", m_login_info.m_rid);
-		text.add("platformID", std::to_string(m_login_info.m_platform_id));
+		text.add("platformID", m_login_info.m_platform_id);
 		text.add("deviceVersion", std::to_string(m_login_info.m_device_version));
 		text.add("country", m_login_info.m_country);
 		text.add("hash", std::to_string(m_login_info.m_hash));
 		text.add("mac", m_login_info.m_mac);
+
 		if (m_login_info.m_user != 0)
 			text.add("user", std::to_string(m_login_info.m_user));
 		if (m_login_info.m_token != 0)
@@ -310,7 +312,10 @@ void Client::login() {
 		if (!m_login_info.m_door_id.empty())
 			text.add("doorID", m_login_info.m_door_id);
 		text.add("wk", m_login_info.m_wk);
+		text.add("zf", std::to_string(m_login_info.m_zf));
 
+		
+		std::cout << " Packet : \n" << text.get_all();
 		std::cout << std::format("Logging on {}...", m_login_info.m_tank_id_name) << std::endl;
 	}
 
@@ -476,6 +481,7 @@ void Client::service_poll() {
 			break;
 		}
 		case ENET_EVENT_TYPE_RECEIVE: {
+			std::cout << "ENET_EVENT_TYPE_RECEIVE" << std::endl;
 			switch (*((int32_t*)event.packet->data)) {
 			case NET_MESSAGE_SERVER_HELLO: {
 				this->login();

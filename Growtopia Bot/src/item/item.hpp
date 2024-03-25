@@ -71,4 +71,6 @@ struct Item {
 	uint8_t m_body_parts[9] = { 0 };
 
 	bool m_has_extra = false;
+
+	std::vector <uint8_t> bytes_80;
 };

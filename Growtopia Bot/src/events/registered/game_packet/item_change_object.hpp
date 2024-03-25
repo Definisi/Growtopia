@@ -2,6 +2,5 @@
 #include <events/event_context.hpp>
 
 namespace events {
-	void modify_item_inventory(EventContext& ctx);
-	
+	void item_change_object(EventContext& ctx);
 }

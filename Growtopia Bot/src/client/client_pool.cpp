@@ -10,6 +10,7 @@
 #include <events/registered/game_packet/send_tile_update_data_multiple.hpp>
 #include <events/registered/game_packet/set_character_state.hpp>
 #include <events/registered/game_packet/tile_change_request.hpp>
+#include <events/registered/game_packet/item_change_object.hpp>
 
 ClientPool* client_pool = new ClientPool();
 
@@ -41,6 +42,7 @@ std::shared_ptr<Client> ClientPool::add(const std::string& tank_id_name, const s
 	client->get_event_pool()->register_packet(NET_GAME_PACKET_SEND_TILE_UPDATE_DATA_MULTIPLE, events::send_tile_update_data_multiple);
 	client->get_event_pool()->register_packet(NET_GAME_PACKET_SET_CHARACTER_STATE, events::set_character_state);
 	client->get_event_pool()->register_packet(NET_GAME_PACKET_TILE_CHANGE_REQUEST, events::tile_change_request);
+	client->get_event_pool()->register_packet(NET_GAME_PACKET_ITEM_CHANGE_OBJECT, events::item_change_object);
 
 	m_clients.push_back(client);
 

@@ -26,13 +26,19 @@ namespace TileExtraType {
 		LOCK = 3,
 		SEED = 4,
 		FOSSIL = 5,
+		MAILBOX = 6,
+		BULLETIN = 7,
 		RANDOM_BLOCK = 8,
 		PROVIDER = 9,
 		ACHIEVEMENT_BLOCK = 10,
 		HEART_MONITOR = 11,
+		DONATION_BOX = 12,
+		TOYBOX = 13,
 		MANNEQUIN = 14,
 		MAGIC_EGG = 15,
 		GAME_BLOCK = 16,
+		EXTRA17 = 17, // Tidak ada
+		EXTRA18 = 18,
 		XENONITE_CRYSTAL = 18,
 		PHONE_BOOTH = 19,
 		CRYSTAL = 20,
@@ -40,10 +46,12 @@ namespace TileExtraType {
 		SPOTLIGHT = 22,
 		DISPLAY_BLOCK = 23,
 		VENDING_MACHINE = 24,
-		FISH_TANK_PORT = 25,
-		SOLAR_COLLECTOR = 26,
+		SOLAR_COLLECTOR = 25,
+		EXTRA26 = 26,
 		FORGE = 27,
 		GIVING_TREE = 28,
+		EXTRA29 = 29,
+		EXTRA30 = 30,
 		SILKWORM = 31,
 		SEWING_MACHINE = 32,
 		COUNTRY_FLAG = 33,
@@ -52,13 +60,17 @@ namespace TileExtraType {
 		BATTLE_PET_CAGE = 36,
 		PET_TRAINER = 37,
 		WEATHER_SPECIAL = 40,
+		EXTRA42 = 42,
 		DISPLAY_SHELF = 43,
 		VIP_ENTRANCE = 44,
+		EXTRA45 = 45,
+		EXTRA46 = 46,// Tidak ada
 		FISH_MOUNT = 47,
 		PORTRAIT = 48,
 		WEATHER_SPECIAL2 = 49,
 		FOSSIL_PREP_STATION = 50,
 		DNA_PROCESSOR = 51,
+		HOWLER = 52,
 		CHEMSYNTH_TANK = 53,
 		STORAGE_BOX = 54,
 		COOKING_OVEN = 55,
@@ -66,12 +78,26 @@ namespace TileExtraType {
 		GEIGER_CHARGER = 57,
 		ADVENTURE_BEGIN = 58,
 		TOMB_ROBBER = 59,
+		EXTRA60 = 60,
 		TRAINING_PORT = 61,
 		MAGPLANT = 62,
+		ROBOT = 63,
+		EXTRA64 = 64,
+		EXTRA65 = 65, // Tidak Ada
+		GROWSCAN9000 = 66,
+		EXTRA67 = 67,
+		EXTRA68 = 68,
+		EXTRA69 = 69,
+		EXTRA70 = 70,
+		SUCKER2 = 71,
+		EXTRA72 = 72,
 		DISAPPEAR_WHEN_STEPPED_ON = 73,
 		SAFE_VAULT = 74,
+		EXTRA75 = 75,
+		EXTRA76 = 76,
 		INFINITY_WEATHER_MACHINE = 77,
-		KRANKEN_S_GALACTIC_BLOCK = 80
+		KRANKEN_S_GALACTIC_BLOCK = 80,
+		EXTRA81 = 81
 	};
 }
 
@@ -104,6 +130,6 @@ struct Tile {
 
 	uint32_t m_display_item;
 
-	void read_tile_extra(BinaryReader& reader);
+	void read_tile_extra(BinaryReader& reader, uint16_t world_version);
 	bool is_ready() const;
 };

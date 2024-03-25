@@ -12,7 +12,7 @@ extern "C" {
 #include <proton/variant.hpp>
 
 #include <client/client_pool.hpp>
-#include <lua/events/event_context.hpp>
+#include <lapi/events/event_context.hpp>
 #include <utils/get_current_time.hpp>
 #include <utils/safe_queue.hpp>
 

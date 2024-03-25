@@ -136,6 +136,7 @@ bool ItemDatabase::initialize(const std::string& path) {
 			item.m_extra_options2 = reader.read(length);
 		}
 
+		item.bytes_80 = std::vector<uint8_t>((uint8_t*)reader.get_offset(), (uint8_t*)reader.get_offset() + 80);
 		reader.skip(80);
 
 		if (m_version >= 11) {
@@ -167,8 +168,10 @@ bool ItemDatabase::initialize(const std::string& path) {
 			}
 		}
 
-		if (m_version >= 16)
-			reader.skip(2);
+		if (m_version >= 16) {
+			uint16_t length = reader.read<uint16_t>();
+			reader.skip(length);
+		}
 
 		if (index != item.m_id) {
 			std::cerr << "Items are unordered " << index << "/" << item.m_id << std::endl;

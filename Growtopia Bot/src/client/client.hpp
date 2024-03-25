@@ -12,7 +12,7 @@ extern "C" {
 
 #include <client/structs/login_info.hpp>
 #include <events/event_pool.hpp>
-#include <lua/events/event_context.hpp>
+#include <lapi/events/event_context.hpp>
 #include <player/inventory.hpp>
 #include <player/player.hpp>
 #include <utils/safe_queue.hpp>

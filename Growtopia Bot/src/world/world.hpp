@@ -2,6 +2,7 @@
 #include <vector>
 
 #include <world/structs/tile.hpp>
+#include <world/structs/floating_item.hpp>
 
 struct World {
 	std::string m_name;
@@ -10,7 +11,11 @@ struct World {
 	uint32_t m_height;
 	uint32_t m_tile_count;
 
+	uint32_t m_floating_item_count;
+	uint32_t m_last_floating_item_offset;
+
 	std::vector<Tile> m_tiles;
+	std::vector<FloatingItem> m_floating_items;
 
 	uint32_t m_owner_uid;
 	std::vector<uint32_t> m_access_list;
