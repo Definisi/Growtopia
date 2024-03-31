@@ -18,6 +18,11 @@ struct Vector2i {
 		: m_x(0), m_y(0) {}
 	Vector2i(int x, int y)
 		: m_x(x), m_y(y) {}
+	float distance(float x, float y) {
+		float value_x = this->m_x - x;
+		float value_y = this->m_y - y;
+		return sqrt(value_x * value_x + value_y * value_y);
+	}
 };
 
 struct Vector3 {

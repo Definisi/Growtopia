@@ -14,7 +14,7 @@ namespace events {
 	void call_function(EventContext& ctx) {
 		VariantList varlist;
 		varlist.deserialize(ctx.m_extended_data);
-
+		//std::cout << varlist.to_string() << std::endl;
 		if (ctx.m_client->m_is_listening_events.load(std::memory_order_relaxed)) {
 			lua::events::EventContext context{
 				.m_name = "NET_GAME_PACKET_CALL_FUNCTION",
@@ -31,7 +31,7 @@ namespace events {
 			GameUpdatePacket game_packet;
 			game_packet.m_type = NET_GAME_PACKET_APP_CHECK_RESPONSE;
 			game_packet.m_net_id = -1;
-			game_packet.m_int_data = 443347149;
+			game_packet.m_int_data = 1125432991;
 			ctx.m_client->send_packet(NET_MESSAGE_GAME_PACKET, &game_packet, sizeof(GameUpdatePacket));;
 
 			ctx.m_client->send_packet(NET_MESSAGE_GENERIC_TEXT, "action|enter_game\n");
@@ -41,28 +41,36 @@ namespace events {
 				std::lock_guard<std::mutex> lock(ctx.m_client->m_mutex);
 
 				uint16_t port = varlist[1].get<int32_t>();
-				ctx.m_client->m_login_info.m_port = port;
 
 				int32_t token = varlist[2].get<int32_t>();
-				ctx.m_client->m_login_info.m_token = token;
 
 				int32_t user = varlist[3].get<int32_t>();
-				ctx.m_client->m_login_info.m_user = user;
 
 				std::string data = varlist[4].get<std::string>();
 				size_t pos = data.find("|");
 
 				int32_t lmode = varlist[5].get<int32_t>();
-				ctx.m_client->m_login_info.m_lmode = lmode;
 
 				std::string address = data.substr(0, pos);
-				ctx.m_client->m_login_info.m_address = address;
 
 				std::string door_id = data.substr(pos + 1, data.find("|", pos + 1) - pos - 1);
-				ctx.m_client->m_login_info.m_door_id = door_id;
 
 				std::string uuid_token = data.substr(data.find("|", pos + 1) + 1);
-				ctx.m_client->m_login_info.m_uuid_token = uuid_token;
+
+				ctx.m_client->m_login_info.m_port = port;
+				ctx.m_client->m_login_info.m_address = address;
+				ctx.m_client->m_login_info.m_lmode = lmode;
+				if (pos == 2) {
+					ctx.m_client->m_login_info.m_door_id = "0";
+				}
+				else {
+					ctx.m_client->m_login_info.m_door_id = door_id;
+				}
+				if (lmode == 1) {
+					ctx.m_client->m_login_info.m_user = user;
+					ctx.m_client->m_login_info.m_token = token;
+					ctx.m_client->m_login_info.m_uuid_token = uuid_token;
+				}
 			}
 
 			GameUpdatePacket game_packet;
@@ -73,7 +81,7 @@ namespace events {
 		}
 		else if (varlist[0].get<std::string>() == "OnConsoleMessage") {
 			std::string message = std::regex_replace(varlist[1].get<std::string>(), std::regex("`."), "");
-			std::cout << std::format("{}", message) << std::endl;
+			//std::cout << std::format("{}", message) << std::endl;
 		}
 		else if (varlist[0].get<std::string>() == "OnDialogRequest") {
 			/*TextScanner scanner(varlist[1].get<std::string>());
@@ -149,7 +157,8 @@ namespace events {
 
 			World world;
 			world.m_name = "EXIT";
-			ctx.m_client->m_world = world;
+			ctx.m_client->m_world = std::move(world);
+			ctx.m_client->status = BotStatus::ONLINE;
 		}
 	}
 }

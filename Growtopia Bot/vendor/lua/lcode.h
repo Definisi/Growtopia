@@ -1,11 +1,9 @@
+#pragma once
 /*
 ** $Id: lcode.h $
 ** Code generator for Lua
 ** See Copyright Notice in lua.h
 */
-
-#ifndef lcode_h
-#define lcode_h
 
 #include "llex.h"
 #include "lobject.h"
@@ -35,11 +33,11 @@ typedef enum BinOpr {
   /* comparison operators */
   OPR_EQ, OPR_LT, OPR_LE,
   OPR_NE, OPR_GT, OPR_GE,
+  OPR_SPACESHIP, OPR_INSTANCEOF,
   /* logical operators */
-  OPR_AND, OPR_OR,
-  OPR_NOBINOPR
+  OPR_AND, OPR_OR, OPR_COAL,
+  OPR_NOBINOPR,
 } BinOpr;
-
 
 /* true if operation is foldable (that is, it is arithmetic or bitwise) */
 #define foldbinop(op)	((op) <= OPR_SHR)
@@ -52,7 +50,7 @@ typedef enum UnOpr { OPR_MINUS, OPR_BNOT, OPR_NOT, OPR_LEN, OPR_NOUNOPR } UnOpr;
 
 
 /* get (pointer to) instruction of given 'expdesc' */
-#define getinstruction(fs,e)	((fs)->f->code[(e)->u.info])
+#define getinstruction(fs,e)	((fs)->f->code[(e)->u.pc])
 
 
 #define luaK_setmultret(fs,e)	luaK_setreturns(fs, e, LUA_MULTRET)
@@ -61,10 +59,8 @@ typedef enum UnOpr { OPR_MINUS, OPR_BNOT, OPR_NOT, OPR_LEN, OPR_NOUNOPR } UnOpr;
 
 LUAI_FUNC int luaK_code (FuncState *fs, Instruction i);
 LUAI_FUNC int luaK_codeABx (FuncState *fs, OpCode o, int A, unsigned int Bx);
-LUAI_FUNC int luaK_codeAsBx (FuncState *fs, OpCode o, int A, int Bx);
 LUAI_FUNC int luaK_codeABCk (FuncState *fs, OpCode o, int A,
                                             int B, int C, int k);
-LUAI_FUNC int luaK_isKint (expdesc *e);
 LUAI_FUNC int luaK_exp2const (FuncState *fs, const expdesc *e, TValue *v);
 LUAI_FUNC void luaK_fixline (FuncState *fs, int line);
 LUAI_FUNC void luaK_nil (FuncState *fs, int from, int n);
@@ -76,9 +72,13 @@ LUAI_FUNC int luaK_exp2anyreg (FuncState *fs, expdesc *e);
 LUAI_FUNC void luaK_exp2anyregup (FuncState *fs, expdesc *e);
 LUAI_FUNC void luaK_exp2nextreg (FuncState *fs, expdesc *e);
 LUAI_FUNC void luaK_exp2val (FuncState *fs, expdesc *e);
-LUAI_FUNC int luaK_exp2RK (FuncState *fs, expdesc *e);
 LUAI_FUNC void luaK_self (FuncState *fs, expdesc *e, expdesc *key);
+LUAI_FUNC void luaK_prepcallfirstarg (FuncState *fs, expdesc *e, expdesc *func);
 LUAI_FUNC void luaK_indexed (FuncState *fs, expdesc *t, expdesc *k);
+LUAI_FUNC bool luaK_isalwaysnil (LexState *ls, expdesc *e);
+LUAI_FUNC bool luaK_isalwaystrue (LexState *ls, expdesc *e);
+LUAI_FUNC bool luaK_isalwaysfalse (LexState *ls, expdesc *e);
+LUAI_FUNC void luaK_goifnil (FuncState *fs, expdesc *e);
 LUAI_FUNC void luaK_goiftrue (FuncState *fs, expdesc *e);
 LUAI_FUNC void luaK_goiffalse (FuncState *fs, expdesc *e);
 LUAI_FUNC void luaK_storevar (FuncState *fs, expdesc *var, expdesc *e);
@@ -99,6 +99,8 @@ LUAI_FUNC void luaK_settablesize (FuncState *fs, int pc,
 LUAI_FUNC void luaK_setlist (FuncState *fs, int base, int nelems, int tostore);
 LUAI_FUNC void luaK_finish (FuncState *fs);
 LUAI_FUNC l_noret luaK_semerror (LexState *ls, const char *msg);
-
-
-#endif
+LUAI_FUNC void luaK_exp2reg (FuncState *fs, expdesc *e, int reg);
+LUAI_FUNC void luaK_freeexp (FuncState *fs, expdesc *e);
+LUAI_FUNC void luaK_invertcond (FuncState *fs, int list);
+LUAI_FUNC void luaK_settop (FuncState *fs, int reg);
+LUAI_FUNC void luaK_dectop (FuncState *fs, int from, int to);

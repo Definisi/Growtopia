@@ -1,14 +1,12 @@
+#pragma once
 /*
 ** $Id: lualib.h $
 ** Lua standard libraries
 ** See Copyright Notice in lua.h
 */
 
-
-#ifndef lualib_h
-#define lualib_h
-
 #include "lua.h"
+#include "lauxlib.h" // Pluto::Preloaded
 
 
 /* version suffix for environment variable names */
@@ -44,9 +42,33 @@ LUAMOD_API int (luaopen_debug) (lua_State *L);
 #define LUA_LOADLIBNAME	"package"
 LUAMOD_API int (luaopen_package) (lua_State *L);
 
+namespace Pluto {
+  extern const PreloadedLibrary preloaded_assert;
+  extern const PreloadedLibrary preloaded_vector3;
+
+  inline const PreloadedLibrary* const all_preloaded[] = {
+    &preloaded_assert,
+    &preloaded_vector3,
+  };
+}
+
+LUAMOD_API int (luaopen_assert)  (lua_State *L);
+LUAMOD_API int (luaopen_vector3) (lua_State *L);
 
 /* open all previous libraries */
 LUALIB_API void (luaL_openlibs) (lua_State *L);
 
-
-#endif
+/* utility for implementation of "universal" variants */
+#define pluto_uwrap(L, f, r) \
+  auto old = setlocale(LC_ALL, nullptr); \
+  setlocale(LC_NUMERIC, "en_US.UTF-8"); \
+  int narg = lua_gettop(L); \
+  lua_pushcfunction(L, f); \
+  lua_insert(L, 1); \
+  int status = lua_pcall(L, narg, r, 0); \
+  if (status != LUA_OK) { \
+    setlocale(LC_ALL, old); \
+    lua_error(L); \
+  } \
+  setlocale(LC_ALL, old); \
+  return r;

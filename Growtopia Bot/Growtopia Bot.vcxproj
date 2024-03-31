@@ -25,6 +25,7 @@
     <ClInclude Include="src\client\client.hpp" />
     <ClInclude Include="src\client\client_pool.hpp" />
     <ClInclude Include="src\client\structs\login_info.hpp" />
+    <ClInclude Include="src\client\structs\macro.hpp" />
     <ClInclude Include="src\events\event_context.hpp" />
     <ClInclude Include="src\events\event_pool.hpp" />
     <ClInclude Include="src\events\registered\game_packet\call_function.hpp" />
@@ -38,6 +39,7 @@
     <ClInclude Include="src\events\registered\game_packet\send_tile_update_data_multiple.hpp" />
     <ClInclude Include="src\events\registered\game_packet\set_character_state.hpp" />
     <ClInclude Include="src\events\registered\game_packet\tile_change_request.hpp" />
+    <ClInclude Include="src\events\registered\track_packet\event_name.hpp" />
     <ClInclude Include="src\item\item.hpp" />
     <ClInclude Include="src\item\item_core.hpp" />
     <ClInclude Include="src\item\types.hpp" />
@@ -61,6 +63,7 @@
     <ClInclude Include="src\utils\generate_random_hex.hpp" />
     <ClInclude Include="src\utils\generate_random_uuid.hpp" />
     <ClInclude Include="src\utils\get_current_time.hpp" />
+    <ClInclude Include="src\utils\string_split.hpp" />
     <ClInclude Include="src\utils\vector.hpp" />
     <ClInclude Include="src\world\structs\floating_item.hpp" />
     <ClInclude Include="src\world\structs\tile.hpp" />
@@ -86,6 +89,7 @@
     <ClInclude Include="vendor\imgui\imgui_markdown.h" />
     <ClInclude Include="vendor\imgui\imgui_notify.h" />
     <ClInclude Include="vendor\imgui\imgui_stdlib.h" />
+    <ClInclude Include="vendor\imgui\imgui_texteditor.hpp" />
     <ClInclude Include="vendor\imgui\imstb_rectpack.h" />
     <ClInclude Include="vendor\imgui\imstb_textedit.h" />
     <ClInclude Include="vendor\imgui\imstb_truetype.h" />
@@ -95,9 +99,11 @@
     <ClInclude Include="vendor\lua\lctype.h" />
     <ClInclude Include="vendor\lua\ldebug.h" />
     <ClInclude Include="vendor\lua\ldo.h" />
+    <ClInclude Include="vendor\lua\lerrormessage.hpp" />
     <ClInclude Include="vendor\lua\lfunc.h" />
     <ClInclude Include="vendor\lua\lgc.h" />
     <ClInclude Include="vendor\lua\ljumptab.h" />
+    <ClInclude Include="vendor\lua\ljumptabgcc.h" />
     <ClInclude Include="vendor\lua\llex.h" />
     <ClInclude Include="vendor\lua\llimits.h" />
     <ClInclude Include="vendor\lua\lmem.h" />
@@ -108,6 +114,7 @@
     <ClInclude Include="vendor\lua\lprefix.h" />
     <ClInclude Include="vendor\lua\lstate.h" />
     <ClInclude Include="vendor\lua\lstring.h" />
+    <ClInclude Include="vendor\lua\lsuggestions.hpp" />
     <ClInclude Include="vendor\lua\ltable.h" />
     <ClInclude Include="vendor\lua\ltm.h" />
     <ClInclude Include="vendor\lua\lua.h" />
@@ -117,6 +124,7 @@
     <ClInclude Include="vendor\lua\lundump.h" />
     <ClInclude Include="vendor\lua\lvm.h" />
     <ClInclude Include="vendor\lua\lzio.h" />
+    <ClInclude Include="vendor\lua\resource.h" />
     <ClInclude Include="vendor\md5\simple_md5.hpp" />
     <ClInclude Include="vendor\nlohmann\json.hpp" />
     <ClInclude Include="vendor\nlohmann\json_fwd.hpp" />
@@ -270,6 +278,7 @@
     <ClCompile Include="src\client\client.cpp" />
     <ClCompile Include="src\client\client_pool.cpp" />
     <ClCompile Include="src\client\structs\login_info.cpp" />
+    <ClCompile Include="src\client\structs\macro.cpp" />
     <ClCompile Include="src\events\registered\game_packet\call_function.cpp" />
     <ClCompile Include="src\events\registered\game_packet\item_change_object.cpp" />
     <ClCompile Include="src\events\registered\game_packet\modify_item_inventory.cpp" />
@@ -281,6 +290,7 @@
     <ClCompile Include="src\events\registered\game_packet\send_tile_update_data_multiple.cpp" />
     <ClCompile Include="src\events\registered\game_packet\set_character_state.cpp" />
     <ClCompile Include="src\events\registered\game_packet\tile_change_request.cpp" />
+    <ClCompile Include="src\events\registered\track_packet\event_name.cpp" />
     <ClCompile Include="src\item\item_core.cpp" />
     <ClCompile Include="src\lapi\api.cpp" />
     <ClCompile Include="src\player\inventory.cpp" />
@@ -296,45 +306,53 @@
     <ClCompile Include="vendor\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="vendor\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="vendor\imgui\imgui_tables.cpp" />
+    <ClCompile Include="vendor\imgui\imgui_texteditor.cpp" />
     <ClCompile Include="vendor\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="vendor\lua\lapi.c" />
-    <ClCompile Include="vendor\lua\lauxlib.c" />
-    <ClCompile Include="vendor\lua\lbaselib.c" />
-    <ClCompile Include="vendor\lua\lcode.c" />
-    <ClCompile Include="vendor\lua\lcorolib.c" />
-    <ClCompile Include="vendor\lua\lctype.c" />
-    <ClCompile Include="vendor\lua\ldblib.c" />
-    <ClCompile Include="vendor\lua\ldebug.c" />
-    <ClCompile Include="vendor\lua\ldo.c" />
-    <ClCompile Include="vendor\lua\ldump.c" />
-    <ClCompile Include="vendor\lua\lfunc.c" />
-    <ClCompile Include="vendor\lua\lgc.c" />
-    <ClCompile Include="vendor\lua\linit.c" />
-    <ClCompile Include="vendor\lua\liolib.c" />
-    <ClCompile Include="vendor\lua\llex.c" />
-    <ClCompile Include="vendor\lua\lmathlib.c" />
-    <ClCompile Include="vendor\lua\lmem.c" />
-    <ClCompile Include="vendor\lua\loadlib.c" />
-    <ClCompile Include="vendor\lua\lobject.c" />
-    <ClCompile Include="vendor\lua\lopcodes.c" />
-    <ClCompile Include="vendor\lua\loslib.c" />
-    <ClCompile Include="vendor\lua\lparser.c" />
-    <ClCompile Include="vendor\lua\lstate.c" />
-    <ClCompile Include="vendor\lua\lstring.c" />
-    <ClCompile Include="vendor\lua\lstrlib.c" />
-    <ClCompile Include="vendor\lua\ltable.c" />
-    <ClCompile Include="vendor\lua\ltablib.c" />
-    <ClCompile Include="vendor\lua\ltm.c" />
-    <ClCompile Include="vendor\lua\lundump.c" />
-    <ClCompile Include="vendor\lua\lutf8lib.c" />
-    <ClCompile Include="vendor\lua\lvm.c" />
-    <ClCompile Include="vendor\lua\lzio.c" />
+    <ClCompile Include="vendor\lua\lapi.cpp" />
+    <ClCompile Include="vendor\lua\lassertlib.cpp" />
+    <ClCompile Include="vendor\lua\lauxlib.cpp" />
+    <ClCompile Include="vendor\lua\lbaselib.cpp" />
+    <ClCompile Include="vendor\lua\lcode.cpp" />
+    <ClCompile Include="vendor\lua\lcorolib.cpp" />
+    <ClCompile Include="vendor\lua\lctype.cpp" />
+    <ClCompile Include="vendor\lua\ldblib.cpp" />
+    <ClCompile Include="vendor\lua\ldebug.cpp" />
+    <ClCompile Include="vendor\lua\ldo.cpp" />
+    <ClCompile Include="vendor\lua\ldump.cpp" />
+    <ClCompile Include="vendor\lua\lfunc.cpp" />
+    <ClCompile Include="vendor\lua\lgc.cpp" />
+    <ClCompile Include="vendor\lua\linit.cpp" />
+    <ClCompile Include="vendor\lua\liolib.cpp" />
+    <ClCompile Include="vendor\lua\llex.cpp" />
+    <ClCompile Include="vendor\lua\lmathlib.cpp" />
+    <ClCompile Include="vendor\lua\lmem.cpp" />
+    <ClCompile Include="vendor\lua\loadlib.cpp" />
+    <ClCompile Include="vendor\lua\lobject.cpp" />
+    <ClCompile Include="vendor\lua\lopcodes.cpp" />
+    <ClCompile Include="vendor\lua\loslib.cpp" />
+    <ClCompile Include="vendor\lua\lparser.cpp" />
+    <ClCompile Include="vendor\lua\lstate.cpp" />
+    <ClCompile Include="vendor\lua\lstring.cpp" />
+    <ClCompile Include="vendor\lua\lstrlib.cpp" />
+    <ClCompile Include="vendor\lua\ltable.cpp" />
+    <ClCompile Include="vendor\lua\ltablib.cpp" />
+    <ClCompile Include="vendor\lua\ltm.cpp" />
+    <ClCompile Include="vendor\lua\lua.cpp" />
+    <ClCompile Include="vendor\lua\luac.cpp" />
+    <ClCompile Include="vendor\lua\lundump.cpp" />
+    <ClCompile Include="vendor\lua\lutf8lib.cpp" />
+    <ClCompile Include="vendor\lua\lvector3lib.cpp" />
+    <ClCompile Include="vendor\lua\lvm.cpp" />
+    <ClCompile Include="vendor\lua\lzio.cpp" />
     <ClCompile Include="vendor\md5\simple_md5.c" />
     <ClCompile Include="vendor\sha256\SHA256.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="vendor\curl\lib\Debug\libcurl_a_debug.lib" />
     <Library Include="vendor\curl\lib\Release\libcurl_a.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -465,11 +483,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\vendor</AdditionalIncludeDirectories>
-      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

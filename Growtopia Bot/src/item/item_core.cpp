@@ -34,8 +34,12 @@ bool ItemDatabase::initialize(const std::string& path) {
 	file.seekg(0, std::ios::beg);
 
 	m_data = new uint8_t[size];
+	char* data = new char[size];
 
 	file.read(reinterpret_cast<char*>(m_data), size);
+	file.close();
+
+	file.read(reinterpret_cast<char*>(data), size);
 	file.close();
 
 	std::string key = "PBG892FXX982ABC*";
@@ -135,8 +139,12 @@ bool ItemDatabase::initialize(const std::string& path) {
 			uint16_t length = reader.read<uint16_t>();
 			item.m_extra_options2 = reader.read(length);
 		}
-
-		item.bytes_80 = std::vector<uint8_t>((uint8_t*)reader.get_offset(), (uint8_t*)reader.get_offset() + 80);
+		/*
+		std::cout << "Id : " << (int)item.m_id << std::endl;
+		std::cout << "Offset : " << (int)reader.get_offset() << std::endl;
+		std::cout << "Offset2 : " << (int)data << std::endl;*/
+		data += 111; // Jangan ubah, sementara kek gini dlu
+		item.bytes_80 = std::vector<uint8_t>((uint8_t*)data, (uint8_t*)data + 80);
 		reader.skip(80);
 
 		if (m_version >= 11) {

@@ -1,11 +1,13 @@
+#pragma once
 /*
 ** $Id: lstate.h $
 ** Global State
 ** See Copyright Notice in lua.h
 */
 
-#ifndef lstate_h
-#define lstate_h
+#ifdef __GNUC__
+#include <cstdint>
+#endif
 
 #include "lua.h"
 
@@ -17,6 +19,10 @@ typedef struct CallInfo CallInfo;
 #include "lobject.h"
 #include "ltm.h"
 #include "lzio.h"
+
+#ifdef PLUTO_ETL_ENABLE
+#include <chrono>
+#endif
 
 
 /*
@@ -181,7 +187,7 @@ struct CallInfo {
   union {
     struct {  /* only for Lua functions */
       const Instruction *savedpc;
-      volatile l_signalT trap;
+      volatile l_signalT trap;  /* function is tracing lines/counts */
       int nextraargs;  /* # of extra arguments in vararg functions */
     } l;
     struct {  /* only for C functions */
@@ -300,8 +306,35 @@ typedef struct global_State {
   TString *strcache[STRCACHE_N][STRCACHE_M];  /* cache for strings in API */
   lua_WarnFunction warnf;  /* warning function */
   void *ud_warn;         /* auxiliary data to 'warnf' */
+#ifndef PLUTO_LUA_LINKABLE
+  void* user_data;       /* a pointer to data you, the user, would like to specify */
+#endif
+#ifdef PLUTO_ETL_ENABLE
+  std::time_t deadline;  /* internal use only; do not use this in your own code. */
+#endif
+#ifndef PLUTO_NO_DEFAULT_TABLE_METATABLE
+  TValue table_mt;  /* internal use only; do not use this in your own code. */
+#endif
 } global_State;
 
+class Registry {
+public:
+  lua_State *state;
+
+  // Fetch a string value from the internal registry.
+  inline const char *GetStrKey(const char *key) {
+    if (lua_getfield(state, LUA_REGISTRYINDEX, key)) {
+      return lua_tostring(state, -1);
+    } else return nullptr;
+  }
+
+  // Fetch a boolean value from the internal registry.
+  inline bool GetBoolKey(const char *key) {
+    return lua_getfield(state, LUA_REGISTRYINDEX, key);
+  }
+
+  Registry(lua_State *L) : state(L) {}
+};
 
 /*
 ** 'per thread' state
@@ -329,6 +362,11 @@ struct lua_State {
   int basehookcount;
   int hookcount;
   volatile l_signalT hookmask;
+
+  // Lua registry abstration.
+  [[nodiscard]] inline Registry GetReg() {
+      return this;
+  }
 };
 
 
@@ -371,12 +409,12 @@ union GCUnion {
 
 /* macros to convert a GCObject into a specific value */
 #define gco2ts(o)  \
-	check_exp(novariant((o)->tt) == LUA_TSTRING, &((cast_u(o))->ts))
+    check_exp(novariant((o)->tt) == LUA_TSTRING, &((cast_u(o))->ts))
 #define gco2u(o)  check_exp((o)->tt == LUA_VUSERDATA, &((cast_u(o))->u))
 #define gco2lcl(o)  check_exp((o)->tt == LUA_VLCL, &((cast_u(o))->cl.l))
 #define gco2ccl(o)  check_exp((o)->tt == LUA_VCCL, &((cast_u(o))->cl.c))
 #define gco2cl(o)  \
-	check_exp(novariant((o)->tt) == LUA_TFUNCTION, &((cast_u(o))->cl))
+    check_exp(novariant((o)->tt) == LUA_TFUNCTION, &((cast_u(o))->cl))
 #define gco2t(o)  check_exp((o)->tt == LUA_VTABLE, &((cast_u(o))->h))
 #define gco2p(o)  check_exp((o)->tt == LUA_VPROTO, &((cast_u(o))->p))
 #define gco2th(o)  check_exp((o)->tt == LUA_VTHREAD, &((cast_u(o))->th))
@@ -396,14 +434,9 @@ union GCUnion {
 LUAI_FUNC void luaE_setdebt (global_State *g, l_mem debt);
 LUAI_FUNC void luaE_freethread (lua_State *L, lua_State *L1);
 LUAI_FUNC CallInfo *luaE_extendCI (lua_State *L);
-LUAI_FUNC void luaE_freeCI (lua_State *L);
 LUAI_FUNC void luaE_shrinkCI (lua_State *L);
 LUAI_FUNC void luaE_checkcstack (lua_State *L);
 LUAI_FUNC void luaE_incCstack (lua_State *L);
 LUAI_FUNC void luaE_warning (lua_State *L, const char *msg, int tocont);
 LUAI_FUNC void luaE_warnerror (lua_State *L, const char *where);
 LUAI_FUNC int luaE_resetthread (lua_State *L, int status);
-
-
-#endif
-

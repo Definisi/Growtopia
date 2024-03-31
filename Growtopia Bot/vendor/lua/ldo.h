@@ -1,12 +1,9 @@
+#pragma once
 /*
 ** $Id: ldo.h $
 ** Stack and Call structure of Lua
 ** See Copyright Notice in lua.h
 */
-
-#ifndef ldo_h
-#define ldo_h
-
 
 #include "llimits.h"
 #include "lobject.h"
@@ -71,7 +68,6 @@ LUAI_FUNC int luaD_pretailcall (lua_State *L, CallInfo *ci, StkId func,
 LUAI_FUNC CallInfo *luaD_precall (lua_State *L, StkId func, int nResults);
 LUAI_FUNC void luaD_call (lua_State *L, StkId func, int nResults);
 LUAI_FUNC void luaD_callnoyield (lua_State *L, StkId func, int nResults);
-LUAI_FUNC StkId luaD_tryfuncTM (lua_State *L, StkId func);
 LUAI_FUNC int luaD_closeprotected (lua_State *L, ptrdiff_t level, int status);
 LUAI_FUNC int luaD_pcall (lua_State *L, Pfunc func, void *u,
                                         ptrdiff_t oldtop, ptrdiff_t ef);
@@ -83,6 +79,3 @@ LUAI_FUNC void luaD_inctop (lua_State *L);
 
 LUAI_FUNC l_noret luaD_throw (lua_State *L, int errcode);
 LUAI_FUNC int luaD_rawrunprotected (lua_State *L, Pfunc f, void *ud);
-
-#endif
-

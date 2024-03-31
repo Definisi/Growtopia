@@ -4,18 +4,18 @@
 
 
 struct FloatingItem {
-    uint16_t item_id;
-    vector2_t pos;
-    uint8_t amount;
-    uint8_t flags;
-    uint32_t drop_id_offset;
+    uint16_t m_item_id;
+    vector2_t m_pos;
+    uint8_t m_amount;
+    uint8_t m_flags;
+    uint32_t m_drop_id_offset;
 
-    FloatingItem() : item_id(0), pos(), amount(0), flags(0), drop_id_offset(0) {}
+    FloatingItem() : m_item_id(0), m_pos(), m_amount(0), m_flags(0), m_drop_id_offset(0) {}
     ~FloatingItem() = default;
 
     bool operator==(const FloatingItem& other) const
     {
-        return drop_id_offset == other.drop_id_offset;
+        return m_drop_id_offset == other.m_drop_id_offset;
     }
 
 };

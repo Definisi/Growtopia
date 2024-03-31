@@ -24,6 +24,9 @@ namespace events {
 
 				const Item& item = item_database->get_item(tile->m_foreground);
 
+				if (tile->m_lock_parent)
+					reader.skip(2);
+
 				if ((tile->m_flags & TileFlag::TILE_EXTRA) || item.m_has_extra)
 					tile->read_tile_extra(reader, ctx.m_client->m_world.m_version);
 

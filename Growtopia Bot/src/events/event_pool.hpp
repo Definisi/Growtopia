@@ -21,6 +21,10 @@ public:
 		m_events[NET_MESSAGE_GAME_MESSAGE].push_back({ name, callback });
 	}
 
+	void register_track(const std::string& name, std::function<void(EventContext&)> callback) {
+		m_events[NET_MESSAGE_TRACK].push_back({ name, callback });
+	}
+
 	void register_packet(const uint8_t& type, std::function<void(EventContext&)> callback) {
 		m_events[NET_MESSAGE_GAME_PACKET].push_back({ "gp_" + std::to_string(type), callback });
 	}

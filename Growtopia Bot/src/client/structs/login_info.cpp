@@ -15,6 +15,10 @@
 #include <utils/hash_str.hpp>
 
 LoginInfo::LoginInfo() {
+	m_lmode = 0;
+	m_user = 0;
+	m_token = 0;
+	m_door_id = "";
 	m_rid = generate_random_hex(32);
 	m_wk = generate_random_hex(32);
 	m_hash = hash_str(std::to_string(random(100000, 250000)) + "RT");
@@ -121,11 +125,42 @@ bool LoginInfo::request_server_data() {
 	return true;
 }
 
+bool LoginInfo::request_app_data()
+{
+	CURL* curl;
+	CURLcode res;
+	std::string result;
+
+	curl = curl_easy_init();
+	if (curl) {
+		curl_easy_setopt(curl, CURLOPT_URL, "https://cdn.growpai.site/speedy/app_data.txt");
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+		res = curl_easy_perform(curl);
+		curl_easy_cleanup(curl);
+
+		if (result.empty()) {
+			return false;
+		}
+		TextScanner scanner(result);
+		std::string version_str = scanner.get("game_version", 0);
+		std::string protocol_str = scanner.get("protocol", 0);
+		m_game_version = version_str;
+		m_protocol = std::stoi(protocol_str);
+	}
+	m_klv = generate_klv(m_game_version, m_protocol, m_hash, m_rid);
+	return true;
+}
+
 void LoginInfo::reset() {
 	m_address = "";
 	m_port = 0;
 	m_meta = "";
 
+	m_lmode = 0;
+	m_user = 0;
+	m_token = 0;
+	m_door_id = "";
 	m_rid = generate_random_hex(32);
 	m_wk = generate_random_hex(32);
 	m_hash = hash_str(std::to_string(random(100000, 250000)) + "RT");

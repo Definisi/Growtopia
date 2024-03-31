@@ -12,6 +12,8 @@
 #include <events/registered/game_packet/tile_change_request.hpp>
 #include <events/registered/game_packet/item_change_object.hpp>
 
+#include <events/registered/track_packet/event_name.hpp>
+
 ClientPool* client_pool = new ClientPool();
 
 std::shared_ptr<Client> ClientPool::add(const std::string& tank_id_name, const std::string& tank_id_pass) {
@@ -32,6 +34,7 @@ std::shared_ptr<Client> ClientPool::add(const std::string& tank_id_name, const s
 		client->m_login_info.m_tank_id_pass = tank_id_pass;
 	}
 
+	client->get_event_pool()->register_track("t_0", events::event_name);
 	client->get_event_pool()->register_packet(NET_GAME_PACKET_CALL_FUNCTION, events::call_function);
 	client->get_event_pool()->register_packet(NET_GAME_PACKET_MODIFY_ITEM_INVENTORY, events::modify_item_inventory);
 	client->get_event_pool()->register_packet(NET_GAME_PACKET_PING_REQUEST, events::ping_request);

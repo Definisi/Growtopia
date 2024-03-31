@@ -1,20 +1,21 @@
+#pragma once
 /*
 ** $Id: lobject.h $
 ** Type definitions for Lua objects
 ** See Copyright Notice in lua.h
 */
 
-
-#ifndef lobject_h
-#define lobject_h
-
-
 #include <stdarg.h>
+#include <string>
 
 
 #include "llimits.h"
 #include "lua.h"
 
+
+#ifdef __GNUC__
+#include <cstdint>
+#endif
 
 /*
 ** Extra types for collectable non-values
@@ -22,7 +23,7 @@
 #define LUA_TUPVAL	LUA_NUMTYPES  /* upvalues */
 #define LUA_TPROTO	(LUA_NUMTYPES+1)  /* function prototypes */
 #define LUA_TDEADKEY	(LUA_NUMTYPES+2)  /* removed keys in tables */
-
+#define LUA_TITER  (LUA_NUMTYPES+3) /* Iterator marker */
 
 
 /*
@@ -52,8 +53,7 @@ typedef union Value {
   lua_CFunction f; /* light C functions */
   lua_Integer i;   /* integer numbers */
   lua_Number n;    /* float numbers */
-  /* not used, but may avoid warnings for uninitialized value */
-  lu_byte ub;
+  unsigned int it; /* iterator index */
 } Value;
 
 
@@ -104,8 +104,8 @@ typedef struct TValue {
 ** macros using this one to be used where L is not available.
 */
 #define checkliveness(L,obj) \
-	((void)L, lua_longassert(!iscollectable(obj) || \
-		(righttt(obj) && (L == NULL || !isdead(G(L),gcvalue(obj))))))
+    ((void)L, lua_longassert(!iscollectable(obj) || \
+        (righttt(obj) && (L == NULL || !isdead(G(L),gcvalue(obj))))))
 
 
 /* Macros to set values */
@@ -116,9 +116,9 @@ typedef struct TValue {
 
 /* main macro to copy values (from 'obj2' to 'obj1') */
 #define setobj(L,obj1,obj2) \
-	{ TValue *io1=(obj1); const TValue *io2=(obj2); \
+    { TValue *io1=(obj1); const TValue *io2=(obj2); \
           io1->value_ = io2->value_; settt_(io1, io2->tt_); \
-	  checkliveness(L,io1); lua_assert(!isnonstrictnil(io1)); }
+      checkliveness(L,io1); lua_assert(!isnonstrictnil(io1)); }
 
 /*
 ** Different types of assignments, according to source and destination.
@@ -328,7 +328,7 @@ typedef struct GCObject {
 #define ttisinteger(o)		checktag((o), LUA_VNUMINT)
 
 #define nvalue(o)	check_exp(ttisnumber(o), \
-	(ttisinteger(o) ? cast_num(ivalue(o)) : fltvalue(o)))
+    (ttisinteger(o) ? cast_num(ivalue(o)) : fltvalue(o)))
 #define fltvalue(o)	check_exp(ttisfloat(o), val_(o).n)
 #define ivalue(o)	check_exp(ttisinteger(o), val_(o).i)
 
@@ -383,34 +383,44 @@ typedef struct GCObject {
 /*
 ** Header for a string value.
 */
-typedef struct TString {
+struct TString {
   CommonHeader;
   lu_byte extra;  /* reserved words for short strings; "has hash" for longs */
-  lu_byte shrlen;  /* length for short strings */
+  lu_byte shrlen;  /* length for short strings, 0xFF for long strings */
   unsigned int hash;
   union {
     size_t lnglen;  /* length for long strings */
     struct TString *hnext;  /* linked list for hash table */
   } u;
   char contents[1];
-} TString;
+
+  [[nodiscard]] bool isShort() const noexcept {
+    return tt == LUA_VSHRSTR;
+  }
+
+  [[nodiscard]] size_t size() const noexcept {
+    return isShort() ? shrlen : u.lnglen;
+  }
+
+  [[nodiscard]] std::string toCpp() const {
+    return std::string(contents, size());
+  }
+};
 
 
 
 /*
-** Get the actual string (array of bytes) from a 'TString'.
+** Get the actual string (array of bytes) from a 'TString'. (Generic
+** version and specialized versions for long and short strings.)
 */
-#define getstr(ts)  ((ts)->contents)
+#define getstr(ts)	((ts)->contents)
+#define getlngstr(ts)	check_exp((ts)->shrlen == 0xFF, (ts)->contents)
+#define getshrstr(ts)	check_exp((ts)->shrlen != 0xFF, (ts)->contents)
 
-
-/* get the actual string (array of bytes) from a Lua value */
-#define svalue(o)       getstr(tsvalue(o))
 
 /* get string length from 'TString *s' */
-#define tsslen(s)	((s)->tt == LUA_VSHRSTR ? (s)->shrlen : (s)->u.lnglen)
-
-/* get string length from 'TValue *o' */
-#define vslen(o)	tsslen(tsvalue(o))
+#define tsslen(s)  \
+	((s)->shrlen != 0xFF ? (s)->shrlen : (s)->u.lnglen)
 
 /* }================================================================== */
 
@@ -488,7 +498,7 @@ typedef struct Udata0 {
 
 /* compute the offset of the memory area of a userdata */
 #define udatamemoffset(nuv) \
-	((nuv) == 0 ? offsetof(Udata0, bindata)  \
+    ((nuv) == 0 ? offsetof(Udata0, bindata)  \
                     : offsetof(Udata, uv) + (sizeof(UValue) * (nuv)))
 
 /* get the address of the memory block inside 'Udata' */
@@ -572,6 +582,11 @@ typedef struct Proto {
   LocVar *locvars;  /* information about local variables (debug information) */
   TString  *source;  /* used for debug information */
   GCObject *gclist;
+  bool lua_vm_compatible;
+
+  void onPlutoOpUsed(int8_t min_required_version) noexcept {
+    lua_vm_compatible = false;
+  }
 } Proto;
 
 /* }================================================================== */
@@ -644,7 +659,7 @@ typedef struct UpVal {
 
 
 #define ClosureHeader \
-	CommonHeader; lu_byte nupvalues; GCObject *gclist
+    CommonHeader; lu_byte nupvalues; GCObject *gclist
 
 typedef struct CClosure {
   ClosureHeader;
@@ -711,16 +726,16 @@ typedef union Node {
 
 /* copy a value into a key */
 #define setnodekey(L,node,obj) \
-	{ Node *n_=(node); const TValue *io_=(obj); \
-	  n_->u.key_val = io_->value_; n_->u.key_tt = io_->tt_; \
-	  checkliveness(L,io_); }
+    { Node *n_=(node); const TValue *io_=(obj); \
+      n_->u.key_val = io_->value_; n_->u.key_tt = io_->tt_; \
+      checkliveness(L,io_); }
 
 
 /* copy a value from a key */
 #define getnodekey(L,obj,node) \
-	{ TValue *io_=(obj); const Node *n_=(node); \
-	  io_->value_ = n_->u.key_val; io_->tt_ = n_->u.key_tt; \
-	  checkliveness(L,io_); }
+    { TValue *io_=(obj); const Node *n_=(node); \
+      io_->value_ = n_->u.key_val; io_->tt_ = n_->u.key_tt; \
+      checkliveness(L,io_); }
 
 
 /*
@@ -746,6 +761,12 @@ typedef struct Table {
   Node *lastfree;  /* any free position is before this position */
   struct Table *metatable;
   GCObject *gclist;
+#ifndef PLUTO_DISABLE_LENGTH_CACHE
+  lua_Unsigned length;  /* cached length of this table, as returned by luaH_getn */
+#endif
+#ifndef PLUTO_DISABLE_TABLE_FREEZING
+  bool isfrozen;
+#endif
 } Table;
 
 
@@ -778,6 +799,12 @@ typedef struct Table {
 #define setdeadkey(node)	(keytt(node) = LUA_TDEADKEY)
 #define keyisdead(node)		(keytt(node) == LUA_TDEADKEY)
 
+
+/* Value used for faster iterations */
+#define LUA_VITER  makevariant(LUA_TITER, 0)
+#define LUA_VITERI  makevariant(LUA_TITER, 1)
+
+
 /* }================================================================== */
 
 
@@ -786,10 +813,10 @@ typedef struct Table {
 ** 'module' operation for hashing (size is always a power of 2)
 */
 #define lmod(s,size) \
-	(check_exp((size&(size-1))==0, (cast_int((s) & ((size)-1)))))
+    (check_exp((size&(size-1))==0, (cast_int((s) & ((size)-1)))))
 
 
-#define twoto(x)	(1<<(x))
+#define twoto(x)	(int)(1<<(x))
 #define sizenode(t)	(twoto((t)->lsizenode))
 
 
@@ -809,7 +836,3 @@ LUAI_FUNC const char *luaO_pushvfstring (lua_State *L, const char *fmt,
                                                        va_list argp);
 LUAI_FUNC const char *luaO_pushfstring (lua_State *L, const char *fmt, ...);
 LUAI_FUNC void luaO_chunkid (char *out, const char *source, size_t srclen);
-
-
-#endif
-

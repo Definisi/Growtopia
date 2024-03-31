@@ -1,12 +1,9 @@
+#pragma once
 /*
 ** $Id: llimits.h $
 ** Limits, basic types, and some other 'installation-dependent' definitions
 ** See Copyright Notice in lua.h
 */
-
-#ifndef llimits_h
-#define llimits_h
-
 
 #include <limits.h>
 #include <stddef.h>
@@ -63,7 +60,7 @@ typedef signed char ls_byte;
 /*
 ** test whether an unsigned value is a power of 2 (or zero)
 */
-#define ispow2(x)	(((x) & ((x) - 1)) == 0)
+#define luaispow2(x)	(((x) & ((x) - 1)) == 0)
 
 
 /* number of chars of a literal string without the ending \0 */
@@ -252,7 +249,7 @@ typedef l_uint32 Instruction;
 ** the size of the C stack.)
 */
 #if !defined(LUAI_MAXCCALLS)
-#define LUAI_MAXCCALLS		200
+#define LUAI_MAXCCALLS		160
 #endif
 
 
@@ -374,7 +371,5 @@ typedef l_uint32 Instruction;
 #define condchangemem(L,pre,pos)	((void)0)
 #else
 #define condchangemem(L,pre,pos)  \
-	{ if (gcrunning(G(L))) { pre; luaC_fullgc(L, 0); pos; } }
-#endif
-
+    { if (gcrunning(G(L))) { pre; luaC_fullgc(L, 0); pos; } }
 #endif

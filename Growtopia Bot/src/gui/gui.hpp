@@ -6,6 +6,7 @@
 #include <imgui/imgui_impl_dx9.h>
 #include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_stdlib.h>
+#include <imgui/imgui_texteditor.hpp>
 
 #include <chrono>
 #include <thread>
@@ -13,18 +14,26 @@
 
 namespace Gui {
 
-	bool Instance = true;
+	bool instance = true;
+	bool show_gui = true;
 
 	HWND window = nullptr;
-	WNDCLASSEX windowClass{ 0 };
+	WNDCLASSEX window_class{ 0 };
 
 	PDIRECT3D9 d3d;
 	LPDIRECT3DDEVICE9 device;
-	D3DPRESENT_PARAMETERS presentParameters{ 0 };
+	D3DPRESENT_PARAMETERS present_parameters{ 0 };
 
 	MSG message{ 0 };
 
-	ImFont* ExecutorFont;
+	TextEditor editor;
+	static const char* file_to_edit = "main.lua";
+	TextEditor::Coordinates cpos = {};
+
+
+	std::string username;
+	std::string password;
+	std::string proxy;
 
 	void create_hwindow(LPCWSTR windowName);
 	void destroy_hwindow();
@@ -32,6 +41,8 @@ namespace Gui {
 	bool create_device();
 	void reset_device();
 	void destroy_device();
+
+	void save_file();
 
 	void create_imgui();
 	void destroy_imgui();
@@ -49,8 +60,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
 	case WM_SIZE:
 		if (Gui::device != 0 && wParam != SIZE_MINIMIZED) {
-			Gui::presentParameters.BackBufferWidth = LOWORD(lParam);
-			Gui::presentParameters.BackBufferHeight = HIWORD(lParam);
+			Gui::present_parameters.BackBufferWidth = LOWORD(lParam);
+			Gui::present_parameters.BackBufferHeight = HIWORD(lParam);
 			Gui::reset_device();
 		}
 		return 0;
@@ -70,25 +81,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 void Gui::create_hwindow(LPCWSTR windowName) {
 
-	windowClass.cbSize = sizeof(WNDCLASSEX);
-	windowClass.style = CS_CLASSDC;
-	windowClass.lpfnWndProc = WndProc;
-	windowClass.cbClsExtra = 0;
-	windowClass.cbWndExtra = 0;
-	windowClass.hInstance = GetModuleHandleA(0);
-	windowClass.hIcon = 0;
-	windowClass.hCursor = 0;
-	windowClass.hbrBackground = 0;
-	windowClass.lpszMenuName = 0;
-	windowClass.lpszClassName = windowName;
-	windowClass.hIconSm = 0;
-	RegisterClassEx(&windowClass);
-	window = CreateWindow(windowClass.lpszClassName, windowClass.lpszClassName, WS_POPUP, 0, 0, 5, 5, 0, 0, windowClass.hInstance, 0);
+	window_class.cbSize = sizeof(WNDCLASSEX);
+	window_class.style = CS_CLASSDC;
+	window_class.lpfnWndProc = WndProc;
+	window_class.cbClsExtra = 0;
+	window_class.cbWndExtra = 0;
+	window_class.hInstance = GetModuleHandleA(0);
+	window_class.hIcon = 0;
+	window_class.hCursor = 0;
+	window_class.hbrBackground = 0;
+	window_class.lpszMenuName = 0;
+	window_class.lpszClassName = windowName;
+	window_class.hIconSm = 0;
+	RegisterClassEx(&window_class);
+	window = CreateWindow(window_class.lpszClassName, window_class.lpszClassName, WS_POPUP, 0, 0, 5, 5, 0, 0, window_class.hInstance, 0);
 }
 
 void Gui::destroy_hwindow() {
 	DestroyWindow(window);
-	UnregisterClass(windowClass.lpszClassName, windowClass.hInstance);
+	UnregisterClass(window_class.lpszClassName, window_class.hInstance);
 }
 
 
@@ -98,14 +109,14 @@ bool Gui::create_device() {
 	if (!(d3d = Direct3DCreate9(D3D_SDK_VERSION)))
 		return false;
 
-	presentParameters.Windowed = TRUE;
-	presentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	presentParameters.BackBufferFormat = D3DFMT_UNKNOWN;
-	presentParameters.EnableAutoDepthStencil = TRUE;
-	presentParameters.AutoDepthStencilFormat = D3DFMT_D16;
-	presentParameters.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+	present_parameters.Windowed = TRUE;
+	present_parameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	present_parameters.BackBufferFormat = D3DFMT_UNKNOWN;
+	present_parameters.EnableAutoDepthStencil = TRUE;
+	present_parameters.AutoDepthStencilFormat = D3DFMT_D16;
+	present_parameters.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 
-	if (d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, window, D3DCREATE_HARDWARE_VERTEXPROCESSING, &presentParameters, &device) < 0)
+	if (d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, window, D3DCREATE_HARDWARE_VERTEXPROCESSING, &present_parameters, &device) < 0)
 		return false;
 
 	ShowWindow(window, SW_HIDE);
@@ -115,7 +126,7 @@ bool Gui::create_device() {
 
 void Gui::reset_device() {
 	ImGui_ImplDX9_InvalidateDeviceObjects();
-	HRESULT result = device->Reset(&presentParameters);
+	HRESULT result = device->Reset(&present_parameters);
 	if (result == D3DERR_INVALIDCALL)
 		IM_ASSERT(0);
 	ImGui_ImplDX9_CreateDeviceObjects();
@@ -130,6 +141,15 @@ void Gui::destroy_device() {
 	if (d3d) {
 		d3d->Release();
 		d3d = nullptr;
+	}
+}
+
+void Gui::save_file()
+{
+	std::ofstream file(file_to_edit);
+	if (file.is_open()) {
+		file << editor.GetText();
+		file.close();
 	}
 }
 
@@ -153,6 +173,39 @@ void Gui::create_imgui() {
 	
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX9_Init(device);
+	auto lang = TextEditor::LanguageDefinition::Lua();
+	static const char* const general_identifiers[] = {
+			"register_event", "listen_events", "run_thread", "sleep", "unlisten_events"
+	};
+	for (auto& k : general_identifiers)
+	{
+		TextEditor::Identifier id;
+		id.mDeclaration = "Speedy general function";
+		lang.mIdentifiers.insert(std::make_pair(std::string(k), id));
+	}
+	
+	static const char* const bot_identifiers[] = {
+			"connect", "get_peer", "get_inventory", "get_player", "get_world", "find_path",
+			"place", "send_packet", "move", "punch", "warp", "wear", "wrench", "get_items",
+			"get_item", "get_tiles", "get_tile", "get_floating_items", "send_packet_raw",
+			"collect", "auto_collect"
+	};
+	
+	for (auto& k : bot_identifiers)
+	{
+		TextEditor::Identifier id;
+		id.mDeclaration = "Speedy bot function";
+		lang.mIdentifiers.insert(std::make_pair(std::string(k), id));
+	}
+	editor.SetLanguageDefinition(lang);
+	{
+		std::ifstream t(file_to_edit);
+		if (t.good())
+		{
+			std::string str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+			editor.SetText(str);
+		}
+	}
 }
 
 void Gui::destroy_imgui() {
@@ -165,6 +218,7 @@ void Gui::destroy_imgui() {
 
 
 bool Gui::begin_render() {
+	cpos = editor.GetCursorPosition();
 	if (PeekMessage(&message, 0, 0U, 0U, PM_REMOVE)) {
 		TranslateMessage(&message);
 		DispatchMessage(&message);

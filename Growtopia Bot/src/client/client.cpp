@@ -10,6 +10,7 @@
 #include <utils/binary_reader.hpp>
 #include <utils/binary_writer.hpp>
 #include <utils/pathfinder.hpp>
+#include <utils/get_current_time.hpp>
 
 Client::Client() : m_host(nullptr), m_peer(nullptr) {
 	m_lua_state = luaL_newstate();
@@ -51,6 +52,87 @@ Client::~Client() {
 void Client::reset() {
 	m_world = World();
 	m_player = Player();
+	//status = BotStatus::OFFLINE;
+}
+
+std::string Client::get_status_string() {
+	switch (status)
+	{
+	case OFFLINE:
+		return "offline";
+		break;
+	case ONLINE:
+		return "online";
+		break;
+	case CONNECTED:
+		return "Connected to server";
+		break;
+	case DISCONNECTED:
+		return "Disconnected";
+		break;
+	case SUSPENDED:
+		return "Account is suspended (permanent)";
+		break;
+	case TEMPBAN:
+		return "Account is banned (temp)";
+		break;
+	case IPBAN:
+		return "This IP Has been banned!";
+		break;
+	case LOGINFAILED:
+		return "Login Failed";
+		break;
+	case WRONGPASS:
+		return "Wrong username or password";
+		break;
+	case CHANGESERVER:
+		return "Switching Sub-Server!";
+		break;
+	case GOTCAPTCHA:
+		return "Solving Captcha";
+		break;
+	case WRONGCAPTCHA:
+		return "Wrong captcha";
+		break;
+	case ONEXIT:
+		return "Exit";
+		break;
+	case ONWORLD:
+		return "In World";
+		break;
+	case INVALIDEMAIL:
+		return "Invalid Email, please use new account";
+		break;
+	case AAP:
+		return "Advanced account protection verify!!";
+		break;
+	case MAXIPADDRESS:
+		return "Unable to create new account!";
+		break;
+	case GUESTCAPTCHA:
+		return "Guest need to verify captcha!";
+		break;
+	case ERCON:
+		return "Error Connecting!";
+	case FAILEDENTERINGWORLD:
+		return "Failed to enter world. banned/invalid!";
+		break;
+	case UPDATE_REQUIRED:
+		return "Update Required";
+		break;
+	case FORBIDDEN:
+		return "Error while fetching the server data growtopia1";
+		break;
+	case FORBIDDEN1:
+		return "App Data forbidden, ask to @SpeedyInWater";
+		break;
+	case FORBIDDEN2:
+		return "Growtopia2 forbidden...";
+		break;
+	default:
+		return "invalid status";
+		break;
+	}
 }
 
 void Client::set_socks5_info(const std::string& ip, const uint16_t port) {
@@ -93,8 +175,13 @@ void Client::set_socks5_info(const std::string& ip, const uint16_t port, const s
 	strcpy(const_cast<char*>(m_login_info.m_socks5_info.auth.password), password.c_str());
 }
 
-bool Client::connect() {
+bool Client::connect(bool reset) {
 	std::lock_guard<std::mutex> lock(m_mutex);
+
+	if (reset) {
+		this->reset();
+		m_login_info.reset();
+	}
 
 	if (m_host != nullptr) {
 		enet_host_destroy(m_host);
@@ -124,8 +211,14 @@ bool Client::connect() {
 
 	if (m_login_info.m_address == "" || m_login_info.m_port == 0) {
 		std::cout << "Getting server address..." << std::endl;
-		if (!m_login_info.request_server_data())
+		if (!m_login_info.request_server_data()) {
+			status = BotStatus::FORBIDDEN;
 			return false;
+		}
+		if (!m_login_info.request_app_data()) {
+			status = BotStatus::FORBIDDEN1;
+			return false;
+		}
 		std::cout << "Located server, connecting..." << std::endl;
 	}
 
@@ -284,7 +377,7 @@ void Client::login() {
 		text.add("requestedName", m_login_info.m_requested_name);
 		text.add("f", std::to_string(m_login_info.m_f));
 		text.add("protocol", std::to_string(m_login_info.m_protocol));
-		text.add("game_version", std::format("{:.2f}", m_login_info.m_game_version));
+		text.add("game_version", m_login_info.m_game_version);
 		text.add("fz", std::to_string(m_login_info.m_fz));
 		text.add("lmode", std::to_string(m_login_info.m_lmode));
 		text.add("cbits", std::to_string(m_login_info.m_cbits));
@@ -303,20 +396,20 @@ void Client::login() {
 		text.add("hash", std::to_string(m_login_info.m_hash));
 		text.add("mac", m_login_info.m_mac);
 
-		if (m_login_info.m_user != 0)
+		if (m_login_info.m_uuid_token.length() > 3 || m_login_info.m_lmode != 0) {
 			text.add("user", std::to_string(m_login_info.m_user));
-		if (m_login_info.m_token != 0)
 			text.add("token", std::to_string(m_login_info.m_token));
-		if (!m_login_info.m_uuid_token.empty() && m_login_info.m_uuid_token != "-1")
+			if (m_login_info.m_lmode == 3 || m_login_info.m_lmode == 2){
+				text.add("doorID", m_login_info.m_door_id);
+			}
 			text.add("UUIDToken", m_login_info.m_uuid_token);
-		if (!m_login_info.m_door_id.empty())
-			text.add("doorID", m_login_info.m_door_id);
+		}
 		text.add("wk", m_login_info.m_wk);
 		text.add("zf", std::to_string(m_login_info.m_zf));
 
 		
-		std::cout << " Packet : \n" << text.get_all();
-		std::cout << std::format("Logging on {}...", m_login_info.m_tank_id_name) << std::endl;
+		//std::cout << " Packet : \n" << text.get_all();
+		//std::cout << std::format("Logging on {}...", m_login_info.m_tank_id_name) << std::endl;
 	}
 
 	this->send_packet(NET_MESSAGE_GENERIC_TEXT, text.get_all());
@@ -443,6 +536,23 @@ bool Client::wrench(const uint32_t& x, const uint32_t& y) {
 	return true;
 }
 
+void Client::collect(const uint32_t& range, bool force)
+{
+	if (m_world.m_floating_item_count == 0)
+		return;
+	for (const auto& item : m_world.m_floating_items) {
+		if (m_player.m_pos.distance(item.m_pos.m_x, item.m_pos.m_y) <= range * 32) {
+			GameUpdatePacket game_packet{ 0 };
+			game_packet.m_pos_x = item.m_pos.m_x;
+			game_packet.m_pos_y = item.m_pos.m_y;
+			game_packet.m_type = NET_GAME_PACKET_ITEM_ACTIVATE_OBJECT_REQUEST;
+			game_packet.m_object_id = item.m_drop_id_offset;
+			game_packet.m_int_x = static_cast<int32_t>(item.m_pos.m_x + item.m_pos.m_y + 4.f);
+			this->send_packet(NET_MESSAGE_GAME_PACKET, &game_packet, sizeof(GameUpdatePacket));
+		}
+	}
+}
+
 void Client::service_poll() {
 	if (!m_host)
 		return;
@@ -455,33 +565,33 @@ void Client::service_poll() {
 	while (enet_host_service(m_host, &event, 10) > 0) {
 		switch (event.type) {
 		case ENET_EVENT_TYPE_CONNECT:
-			std::cout << "ENET_EVENT_TYPE_CONNECT" << std::endl;
+			//std::cout << "ENET_EVENT_TYPE_CONNECT" << std::endl;
+			status = BotStatus::CONNECTED;
 			break;
 		case ENET_EVENT_TYPE_DISCONNECT:
-			std::cout << "ENET_EVENT_TYPE_DISCONNECT" << std::endl;
-
+			//std::cout << "ENET_EVENT_TYPE_DISCONNECT" << std::endl;
+			status = BotStatus::DISCONNECTED;
 			std::thread([&]() {
-				while (!this->connect()) {
-					this->reset();
-					m_login_info.reset();
-					std::this_thread::sleep_for(std::chrono::seconds(30));
-				}
+					while (!this->connect() && m_macro.auto_reconnect) {
+						this->reset();
+						m_login_info.reset();
+						std::this_thread::sleep_for(std::chrono::seconds(30));
+					}
 				}).detach();
 			break;
 		case ENET_EVENT_TYPE_DISCONNECT_TIMEOUT: {
-			std::cout << "ENET_EVENT_TYPE_DISCONNECT_TIMEOUT" << std::endl;
+			//std::cout << "ENET_EVENT_TYPE_DISCONNECT_TIMEOUT" << std::endl;
 
 			std::thread([&]() {
-				while (!this->connect()) {
-					this->reset();
-					m_login_info.reset();
-					std::this_thread::sleep_for(std::chrono::seconds(30));
-				}
+					while (!this->connect() && m_macro.auto_reconnect) {
+						this->reset();
+						m_login_info.reset();
+						std::this_thread::sleep_for(std::chrono::seconds(30));
+					}
 				}).detach();
 			break;
 		}
 		case ENET_EVENT_TYPE_RECEIVE: {
-			std::cout << "ENET_EVENT_TYPE_RECEIVE" << std::endl;
 			switch (*((int32_t*)event.packet->data)) {
 			case NET_MESSAGE_SERVER_HELLO: {
 				this->login();
@@ -509,6 +619,30 @@ void Client::service_poll() {
 				}
 				break;
 			}
+			case NET_MESSAGE_ERROR: {
+				break;
+			}
+			case NET_MESSAGE_TRACK: {
+				TextScanner text = TextScanner(reinterpret_cast<char*>(event.packet->data + 4));
+
+				EventContext ctx{
+					.m_client = shared_from_this(),
+					.m_scanner = text,
+					.m_game_packet = {},
+					.m_extended_data = {}
+				};
+
+				if (!m_event_pool->execute(NET_MESSAGE_TRACK, std::format("t_{}", text.get("eventType", 0)), ctx)) {
+					std::cout << std::format("Unhandled NET_MESSAGE_TRACK -> {}", text.get("eventType", 0)) << std::endl;
+				}
+				break;
+			}
+			case NET_MESSAGE_GENERIC_TEXT: {
+				break;
+			}
+			case NET_MESSAGE_GAME_MESSAGE: {
+				break;
+			}
 			default:
 				break;
 			}
@@ -519,5 +653,11 @@ void Client::service_poll() {
 		default:
 			break;
 		}
+	}
+
+	uint64_t time = get_current_time<std::chrono::milliseconds>();
+	if (m_macro.auto_collect && ((m_macro.auto_collect_last + m_macro.auto_collect_interval) < time)) {
+		collect(m_macro.auto_collect_range, m_macro.auto_collect_force);
+		m_macro.auto_collect_last = time;
 	}
 }

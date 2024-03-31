@@ -1,12 +1,9 @@
+#pragma once
 /*
 ** $Id: luaconf.h $
 ** Configuration file for Lua
 ** See Copyright Notice in lua.h
 */
-
-
-#ifndef luaconf_h
-#define luaconf_h
 
 #include <limits.h>
 #include <stddef.h>
@@ -208,17 +205,18 @@
 
 #if !defined(LUA_PATH_DEFAULT)
 #define LUA_PATH_DEFAULT  \
-		LUA_LDIR"?.lua;"  LUA_LDIR"?\\init.lua;" \
-		LUA_CDIR"?.lua;"  LUA_CDIR"?\\init.lua;" \
-		LUA_SHRDIR"?.lua;" LUA_SHRDIR"?\\init.lua;" \
-		".\\?.lua;" ".\\?\\init.lua"
+        LUA_LDIR"?.lua;"  LUA_LDIR"?\\init.lua;" \
+        LUA_CDIR"?.lua;"  LUA_CDIR"?\\init.lua;" \
+        LUA_SHRDIR"?.lua;" LUA_SHRDIR"?\\init.lua;" \
+        ".\\?.lua;" ".\\?\\init.lua;" \
+        ".\\?.pluto;" ".\\?\\init.pluto"
 #endif
 
 #if !defined(LUA_CPATH_DEFAULT)
 #define LUA_CPATH_DEFAULT \
-		LUA_CDIR"?.dll;" \
-		LUA_CDIR"..\\lib\\lua\\" LUA_VDIR "\\?.dll;" \
-		LUA_CDIR"loadall.dll;" ".\\?.dll"
+        LUA_CDIR"?.dll;" \
+        LUA_CDIR"..\\lib\\lua\\" LUA_VDIR "\\?.dll;" \
+        LUA_CDIR"loadall.dll;" ".\\?.dll"
 #endif
 
 #else			/* }{ */
@@ -229,14 +227,15 @@
 
 #if !defined(LUA_PATH_DEFAULT)
 #define LUA_PATH_DEFAULT  \
-		LUA_LDIR"?.lua;"  LUA_LDIR"?/init.lua;" \
-		LUA_CDIR"?.lua;"  LUA_CDIR"?/init.lua;" \
-		"./?.lua;" "./?/init.lua"
+        LUA_LDIR"?.lua;"  LUA_LDIR"?/init.lua;" \
+        LUA_CDIR"?.lua;"  LUA_CDIR"?/init.lua;" \
+        "./?.lua;" "./?/init.lua;" \
+        "./?.pluto;" "./?/init.pluto"
 #endif
 
 #if !defined(LUA_CPATH_DEFAULT)
 #define LUA_CPATH_DEFAULT \
-		LUA_CDIR"?.so;" LUA_CDIR"loadall.so;" "./?.so"
+        LUA_CDIR"?.so;" LUA_CDIR"loadall.so;" "./?.so"
 #endif
 
 #endif			/* } */
@@ -257,6 +256,14 @@
 
 #endif
 
+/*
+** LUA_IGMARK is a mark to ignore all after it when building the
+** module name (e.g., used to build the luaopen_ function name).
+** Typically, the sufix after the mark is the module version,
+** as in "mod-v1.2.so".
+*/
+#define LUA_IGMARK		"-"
+
 /* }================================================================== */
 
 
@@ -275,26 +282,57 @@
 ** the libraries, you may want to use the following definition (define
 ** LUA_BUILD_AS_DLL to get it).
 */
-#if defined(LUA_BUILD_AS_DLL)	/* { */
+#if defined(LUA_BUILD_AS_DLL)
+  #ifndef PLUTO_C_LINKAGE
+    #define PLUTO_C_LINKAGE true
+  #endif
+  #if defined(LUA_CORE) || defined(LUA_LIB)
+    #ifdef _WIN32
+      #define PLUTO_DLLSPEC __declspec(dllexport)
+    #else
+      #define PLUTO_DLLSPEC
+    #endif
+  #else
+    #ifdef _WIN32
+      #define PLUTO_DLLSPEC __declspec(dllimport)
+    #else
+      #define PLUTO_DLLSPEC
+    #endif
+  #endif
+#else
+  #ifndef PLUTO_C_LINKAGE
+    #define PLUTO_C_LINKAGE false
+  #endif
+  #ifdef __EMSCRIPTEN__
+    #include "emscripten.h"
+    #define PLUTO_DLLSPEC EMSCRIPTEN_KEEPALIVE
+  #elif !defined(_WIN32)
+    #define PLUTO_DLLSPEC __attribute__((visibility("default")))
+  #else
+    #define PLUTO_DLLSPEC
+  #endif
+#endif
 
-#if defined(LUA_CORE) || defined(LUA_LIB)	/* { */
-#define LUA_API __declspec(dllexport)
-#else						/* }{ */
-#define LUA_API __declspec(dllimport)
-#endif						/* } */
+// Additions by Pluto that are not compatible with `extern "C"` use PLUTO_API instead of LUA_API.
+#define PLUTO_API	PLUTO_DLLSPEC
 
-#else				/* }{ */
-
-#define LUA_API		extern
-
-#endif				/* } */
-
+#if PLUTO_C_LINKAGE
+  #define LUA_API			extern "C" PLUTO_API
+  #define LUA_API_NORETURN	extern "C" [[noreturn]] PLUTO_API
+#else
+  #define LUA_API			PLUTO_API
+  #define LUA_API_NORETURN	[[noreturn]] LUA_API
+#endif
 
 /*
 ** More often than not the libs go together with the core.
 */
 #define LUALIB_API	LUA_API
 #define LUAMOD_API	LUA_API
+
+#define LUALIB_API_NORETURN	LUA_API_NORETURN
+
+#define PLUTOLIB_API	PLUTO_API
 
 
 /*
@@ -409,7 +447,7 @@
 #define l_floor(x)		(l_mathop(floor)(x))
 
 #define lua_number2str(s,sz,n)  \
-	l_sprintf((s), sz, LUA_NUMBER_FMT, (LUAI_UACNUMBER)(n))
+    l_sprintf((s), sz, LUA_NUMBER_FMT, (LUAI_UACNUMBER)(n))
 
 /*
 @@ lua_numbertointeger converts a float number with an integral value
@@ -502,7 +540,7 @@
 #define LUAI_UACINT		LUA_INTEGER
 
 #define lua_integer2str(s,sz,n)  \
-	l_sprintf((s), sz, LUA_INTEGER_FMT, (LUAI_UACINT)(n))
+    l_sprintf((s), sz, LUA_INTEGER_FMT, (LUAI_UACINT)(n))
 
 /*
 ** use LUAI_UACINT here to avoid problems with promotions (which
@@ -617,7 +655,7 @@
 */
 #if !defined(LUA_USE_C89)
 #define lua_number2strx(L,b,sz,f,n)  \
-	((void)L, l_sprintf(b,sz,f,(LUAI_UACNUMBER)(n)))
+    ((void)L, l_sprintf(b,sz,f,(LUAI_UACNUMBER)(n)))
 #endif
 
 
@@ -671,7 +709,7 @@
 */
 #if !defined(luai_likely)
 
-#if defined(__GNUC__) && !defined(LUA_NOBUILTIN)
+#if (defined(__GNUC__) || defined(__CLANG__)) && !defined(LUA_NOBUILTIN)
 #define luai_likely(x)		(__builtin_expect(((x) != 0), 1))
 #define luai_unlikely(x)	(__builtin_expect(((x) != 0), 0))
 #else
@@ -734,7 +772,7 @@
 ** CHANGE it if you need a different limit. This limit is arbitrary;
 ** its only purpose is to stop Lua from consuming unlimited stack
 ** space (and to reserve some numbers for pseudo-indices).
-** (It must fit into max(size_t)/32 and max(int)/2.)
+** (It must fit into max(size_t)/32.)
 */
 #if LUAI_IS32INT
 #define LUAI_MAXSTACK		1000000
@@ -774,20 +812,412 @@
 
 /* }================================================================== */
 
-
-
-
-
-/* =================================================================== */
-
 /*
-** Local configuration. You can use this space to add your redefinitions
-** without modifying the main part of the file.
+** {====================================================================
+** Pluto configuration
+** =====================================================================}
 */
 
+// If defined, Pluto errors will use ANSI color codes.
+//#define PLUTO_USE_COLORED_OUTPUT
 
+// If defined, Pluto will exclude code snippets from error messages to make them shorter.
+//#define PLUTO_SHORT_ERRORS
 
+// If defined, Pluto won't assume that source files are UTF-8 encoded and restrict valid symbol names.
+//#define PLUTO_NO_UTF8
 
+// If defined, Pluto will use a jumptable in the VM even if not compiled via GCC or Clang.
+// This will generally improve runtime performance but can add minutes to compile time, depending on the setup.
+//#define PLUTO_FORCE_JUMPTABLE
 
+// If defined, Pluto will use C++ exceptions to implement Lua longjumps.
+// This is generally slower and complicates exception handling.
+//#define PLUTO_USE_THROW
+
+// If defined, Pluto won't imbue tables with a metatable by default.
+//#define PLUTO_NO_DEFAULT_TABLE_METATABLE
+
+/*
+** {====================================================================
+** Pluto configuration: Warnings
+** =====================================================================}
+*/
+
+// If defined, the "global-shadow" warning is enabled by default.
+//#define PLUTO_WARN_GLOBAL_SHADOW
+
+// The list of globals covered by the "global-shadow" warning.
+#ifndef PLUTO_COMMON_GLOBAL_NAMES
+#define PLUTO_COMMON_GLOBAL_NAMES "table","string","arg"
 #endif
 
+// If defined, the "non-portable-code" warning is enabled by default.
+//#define PLUTO_WARN_NON_PORTABLE_CODE
+
+// If defined, the "non-portable-bytecode" warning is enabled by default.
+//#define PLUTO_WARN_NON_PORTABLE_BYTECODE
+
+// If defined, the "non-portable-name" warning is enabled by default.
+//#define PLUTO_WARN_NON_PORTABLE_NAME
+
+/*
+** {====================================================================
+** Pluto configuration: Compatibility
+** =====================================================================}
+*/
+
+// If defined, Pluto will assign 'pluto_' to new keywords which break previously valid Lua identifiers.
+// So, for example, the 'switch' keyword becomes 'pluto_switch'. The 'pluto_' variants are valid even if this is not defined.
+// As of Pluto 0.7.0, scripts can individually set compatibility modes via 'pluto_use'.
+//#define PLUTO_COMPATIBLE_MODE
+
+#ifdef PLUTO_COMPATIBLE_MODE
+    #define PLUTO_COMPATIBLE_SWITCH
+    #define PLUTO_COMPATIBLE_CONTINUE
+    #define PLUTO_COMPATIBLE_ENUM
+    #define PLUTO_COMPATIBLE_NEW
+    #define PLUTO_COMPATIBLE_CLASS
+    #define PLUTO_COMPATIBLE_PARENT
+    #define PLUTO_COMPATIBLE_EXPORT
+    #define PLUTO_COMPATIBLE_TRY
+    #define PLUTO_COMPATIBLE_CATCH
+#endif
+
+// If defined, Pluto disables optimisations of Lua macros that would make your code unable to be linked
+// against Lua if your code is using these macros with Pluto's definitions.
+//#define PLUTO_LUA_LINKABLE
+
+/*
+** {====================================================================
+** Pluto configuration: Optional keywords
+** =====================================================================}
+*/
+
+// If defined, Pluto will imply 'pluto_use let' at the beginning of every script.
+//#define PLUTO_USE_LET
+
+// If defined, Pluto will imply 'pluto_use const' at the beginning of every script.
+//#define PLUTO_USE_CONST
+
+/*
+** {====================================================================
+** Pluto configuration: Infinite Loop Prevention (ILP)
+**
+** This is only useful in game regions, where a long loop may block the main thread and crash the game.
+** These places usually implement a yield (or wait) function, which can be detected and hooked to reset iterations.
+** =====================================================================}
+*/
+
+// If defined, Pluto will attempt to prevent infinite loops.
+//#define PLUTO_ILP_ENABLE
+
+#ifdef PLUTO_ILP_ENABLE
+/*
+** This is the maximum amount of backward jumps permitted in a singular loop block.
+** If exceeded, the backward jump is ignored to escape the loop.
+*/
+#ifndef PLUTO_ILP_MAX_ITERATIONS
+#define PLUTO_ILP_MAX_ITERATIONS			1'000'000
+#endif
+
+// If you want (i.e) `luaB_next` to reset iteration counters, define as `luaB_next`.
+// #define PLUTO_ILP_HOOK_FUNCTION		luaB_next
+
+// If defined, Pluto won't throw an error and instead just break out of the loop.
+//#define PLUTO_ILP_SILENT_BREAK
+
+// Allows you to customise how an ILP violation is raised to the runtime (or not).
+#ifdef PLUTO_ILP_SILENT_BREAK
+  #define PLUTO_ILP_ERROR ;
+#else
+  #ifndef PLUTO_ILP_ERROR
+    #define PLUTO_ILP_ERROR luaG_runerror(L, "infinite loop detected (exceeded max iterations: %d)", PLUTO_ILP_MAX_ITERATIONS);
+  #endif
+#endif
+
+#endif // PLUTO_ILP_ENABLE
+
+/*
+** {====================================================================
+** Pluto configuration: Execution Time Limit (ETL)
+**
+** This is only useful in sandbox environments where stalling is absolutely unacceptable.
+** =====================================================================}
+*/
+
+//#define PLUTO_ETL_ENABLE
+
+#ifdef PLUTO_ETL_ENABLE
+/*
+** This is the maximum amount of nanoseconds the VM is allowed to run.
+*/
+#ifndef PLUTO_ETL_NANOS
+#define PLUTO_ETL_NANOS			1'000'000 /* 1ms */
+#endif
+
+/*
+** This can be used to execute custom code when the time limit is exceeded and
+** the VM is about to be terminated.
+*/
+#ifndef PLUTO_ETL_TIMESUP
+#define PLUTO_ETL_TIMESUP luaG_runerror(L, "Execution time limit exceeded");
+#endif
+#endif
+
+/*
+** {====================================================================
+** Pluto configuration: Memory Limit
+**
+** For sandbox environments. This changes the memory allocator in luaL_newstate.
+** =====================================================================}
+*/
+
+//#define PLUTO_MEMORY_LIMIT 64'000'000 /* 64 MB (megabytes, not mebibytes!) */
+
+/*
+** {====================================================================
+** Pluto configuration: VM Dump
+** =====================================================================}
+*/
+
+// If defined, Pluto will print every VM instruction that is ran.
+// Note that you can modify lua_writestring to redirect output.
+//#define PLUTO_VMDUMP
+
+#ifdef PLUTO_VMDUMP
+/* Example:
+**  #define vmDumpIgnore \
+**      OP_LOADI \
+**      OP_LOADF
+*/
+
+// Opcodes listed in this structure are a blacklist. They not be printed when VM dumping.
+#define vmDumpIgnore
+
+
+// Opcodes listed in this structure are a whitelist. They are only printed when VM dumping.
+#define vmDumpAllow
+
+// If defined, Pluto will use vmDumpAllow instead of vmDumpIgnore.
+//#define PLUTO_VMDUMP_WHITELIST
+
+// Defines under what circumstances the VM Dump is active.
+#ifndef PLUTO_VMDUMP_COND
+#define PLUTO_VMDUMP_COND(L) true
+#endif
+
+#endif // PLUTO_VMDUMP
+
+/*
+** {====================================================================
+** Pluto configuration: Content Moderation
+** =====================================================================}
+*/
+
+// If defined, Pluto will not load compiled Lua or Pluto code.
+//#define PLUTO_DISABLE_COMPILED
+
+// If defined, the provided function will be called as bool(lua_State* L, const char* code).
+// If it returns false, a Lua error is raised.
+//#define PLUTO_LOAD_HOOK ContmodOnLoad
+
+// If defined, the provided function will be called as bool(lua_State* L, const char* filename).
+// If it returns false, a Lua error is raised.
+// This will affect require and dofile.
+//#define PLUTO_LOADFILE_HOOK ContmodOnLoadfile
+
+// It is possible to pass a reader function to the load function.
+// Pluto currently offers no way to moderate code loaded like this,
+// so you may define this to disable this method of code-loading.
+//#define PLUTO_DISABLE_UNMODERATED_LOAD
+
+// If defined, the provided function will be called as bool(lua_State* L, const char* path).
+// If it returns false, a Lua eror is raised.
+// This will affect require and package.loadlib.
+//#define PLUTO_LOADCLIB_HOOK ContmodOnLoadCLib
+
+// If defined, Pluto will prevent loading the entire io library & os.remove, and os.rename to prevent filesystem access.
+// Pluto will compile any filesystem-related functions to do nothing more than "return 0;"
+//   This is done largely to ensure package.loadlib gets nothing from loading their symbols
+//   There has been exploits in the past that have managed to load these lua_CFunction objects provided they're in memory. This shouldn't even be considered a worry with Pluto, since they are literally compiled to do nothing instead of only getting excluded from luaL_openlibs.
+// 
+// It's highly suggested in most cases to define PLUTO_NO_OS_EXECUTE below too, since os.execute can be used for file-system access. 
+// 
+// It's suggested you implement PLUTO_LOADCLIB_HOOK, etc, for even more powerful coverage. Package.loadlib can still load other Pluto/Lua libraries and use their lua_CFunction objects.
+//#define PLUTO_NO_FILESYSTEM
+
+// Disables os.execute & io.popen.
+//#define PLUTO_NO_OS_EXECUTE
+
+// Eliminate any loading of any binaries. This removes package.loadlib and prevents 'require' from loading any C modules or shared libraries.
+//#define PLUTO_NO_BINARIES
+
+// If defined, luaL_openlibs will not include the 'debug' library.
+//#define PLUTO_NO_DEBUGLIB
+
+// If defined, luaL_openlibs will not include the 'coroutine' library.
+//#define PLUTO_NO_COROLIB
+#ifdef PLUTO_NO_BINARIES
+#define PLUTO_NO_BINARIES_FAIL luaL_error(L, "binary modules cannot be loaded in this environment");
+#endif
+
+/*
+** {====================================================================
+** Pluto configuration: Performance
+**
+** We recommend not touching this section because the only options here are to disable Pluto features
+** and doing so will not affect performance as trivially as "less features = more performance."
+** =====================================================================}
+*/
+
+//#define PLUTO_DISABLE_LENGTH_CACHE
+//#define PLUTO_DISABLE_TABLE_FREEZING
+
+/*
+** {====================================================================
+** Pluto color macros.
+** =====================================================================}
+*/
+
+#ifdef PLUTO_USE_COLORED_OUTPUT // Don't need to write any 'ifdef' macro logic inside of Pluto::ErrorMessage.
+#define ESC "\x1B"
+
+#define BLK ESC "[0;30m"
+#define RED ESC "[0;31m"
+#define GRN ESC "[0;32m"
+#define YEL ESC "[0;33m"
+#define BLU ESC "[0;34m"
+#define MAG ESC "[0;35m"
+#define CYN ESC "[0;36m"
+#define WHT ESC "[0;37m"
+
+//Regular bold text
+#define BBLK ESC "[1;30m"
+#define BRED ESC "[1;31m"
+#define BGRN ESC "[1;32m"
+#define BYEL ESC "[1;33m"
+#define BBLU ESC "[1;34m"
+#define BMAG ESC "[1;35m"
+#define BCYN ESC "[1;36m"
+#define BWHT ESC "[1;37m"
+
+//Regular underline text
+#define UBLK ESC "[4;30m"
+#define URED ESC "[4;31m"
+#define UGRN ESC "[4;32m"
+#define UYEL ESC "[4;33m"
+#define UBLU ESC "[4;34m"
+#define UMAG ESC "[4;35m"
+#define UCYN ESC "[4;36m"
+#define UWHT ESC "[4;37m"
+
+//Regular background
+#define BLKB ESC "[40m"
+#define REDB ESC "[41m"
+#define GRNB ESC "[42m"
+#define YELB ESC "[43m"
+#define BLUB ESC "[44m"
+#define MAGB ESC "[45m"
+#define CYNB ESC "[46m"
+#define WHTB ESC "[47m"
+
+//High intensty background 
+#define BLKHB ESC "[0;100m"
+#define REDHB ESC "[0;101m"
+#define GRNHB ESC "[0;102m"
+#define YELHB ESC "[0;103m"
+#define BLUHB ESC "[0;104m"
+#define MAGHB ESC "[0;105m"
+#define CYNHB ESC "[0;106m"
+#define WHTHB ESC "[0;107m"
+
+//High intensty text
+#define HBLK ESC "[0;90m"
+#define HRED ESC "[0;91m"
+#define HGRN ESC "[0;92m"
+#define HYEL ESC "[0;93m"
+#define HBLU ESC "[0;94m"
+#define HMAG ESC "[0;95m"
+#define HCYN ESC "[0;96m"
+#define HWHT ESC "[0;97m"
+
+//Bold high intensity text
+#define BHBLK ESC "[1;90m"
+#define BHRED ESC "[1;91m"
+#define BHGRN ESC "[1;92m"
+#define BHYEL ESC "[1;93m"
+#define BHBLU ESC "[1;94m"
+#define BHMAG ESC "[1;95m"
+#define BHCYN ESC "[1;96m"
+#define BHWHT ESC "[1;97m"
+
+//Reset
+#define RESET ESC "[0m"
+#define CRESET ESC "[0m"
+#define COLOR_RESET ESC "[0m"
+#else // PLUTO_USE_COLORED_OUTPUT
+#define ESC ""
+#define BLK ESC
+#define RED ESC
+#define GRN ESC
+#define YEL ESC
+#define BLU ESC
+#define MAG ESC
+#define CYN ESC
+#define WHT ESC
+#define BBLK ESC
+#define BRED ESC
+#define BGRN ESC
+#define BYEL ESC
+#define BBLU ESC
+#define BMAG ESC
+#define BCYN ESC
+#define BWHT ESC
+#define UBLK ESC
+#define URED ESC
+#define UGRN ESC
+#define UYEL ESC
+#define UBLU ESC
+#define UMAG ESC
+#define UCYN ESC
+#define UWHT ESC
+#define BLKB ESC
+#define REDB ESC
+#define GRNB ESC
+#define YELB ESC
+#define BLUB ESC
+#define MAGB ESC
+#define CYNB ESC
+#define WHTB ESC
+#define BLKHB ESC
+#define REDHB ESC
+#define GRNHB ESC
+#define YELHB ESC
+#define BLUHB ESC
+#define MAGHB ESC
+#define CYNHB ESC
+#define WHTHB ESC
+#define HBLK ESC
+#define HRED ESC
+#define HGRN ESC
+#define HYEL ESC
+#define HBLU ESC
+#define HMAG ESC
+#define HCYN ESC
+#define HWHT ESC
+#define BHBLK ESC
+#define BHRED ESC
+#define BHGRN ESC
+#define BHYEL ESC
+#define BHBLU ESC
+#define BHMAG ESC
+#define BHCYN ESC
+#define BHWHT ESC
+#define RESET ESC
+#define CRESET ESC
+#define COLOR_RESET ESC
+#endif // PLUTO_USE_COLORED_OUTPUT
+
+
+/* }================================================================== */

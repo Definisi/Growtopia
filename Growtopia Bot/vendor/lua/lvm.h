@@ -1,12 +1,9 @@
+#pragma once
 /*
 ** $Id: lvm.h $
 ** Lua virtual machine
 ** See Copyright Notice in lua.h
 */
-
-#ifndef lvm_h
-#define lvm_h
-
 
 #include "ldo.h"
 #include "lobject.h"
@@ -14,7 +11,7 @@
 
 
 #if !defined(LUA_NOCVTN2S)
-#define cvt2str(o)	ttisnumber(o)
+#define cvt2str(o)	(ttisnumber(o) || ttisboolean(o))
 #else
 #define cvt2str(o)	0	/* no conversion from numbers to strings */
 #endif
@@ -49,13 +46,13 @@ typedef enum {
 
 /* convert an object to a float (including string coercion) */
 #define tonumber(o,n) \
-	(ttisfloat(o) ? (*(n) = fltvalue(o), 1) : luaV_tonumber_(o,n))
+    (ttisfloat(o) ? (*(n) = fltvalue(o), 1) : luaV_tonumber_(o,n))
 
 
 /* convert an object to a float (without string coercion) */
 #define tonumberns(o,n) \
-	(ttisfloat(o) ? ((n) = fltvalue(o), 1) : \
-	(ttisinteger(o) ? ((n) = cast_num(ivalue(o)), 1) : 0))
+    (ttisfloat(o) ? ((n) = fltvalue(o), 1) : \
+    (ttisinteger(o) ? ((n) = cast_num(ivalue(o)), 1) : 0))
 
 
 /* convert an object to an integer (including string coercion) */
@@ -137,5 +134,4 @@ LUAI_FUNC lua_Integer luaV_mod (lua_State *L, lua_Integer x, lua_Integer y);
 LUAI_FUNC lua_Number luaV_modf (lua_State *L, lua_Number x, lua_Number y);
 LUAI_FUNC lua_Integer luaV_shiftl (lua_Integer x, lua_Integer y);
 LUAI_FUNC void luaV_objlen (lua_State *L, StkId ra, const TValue *rb);
-
-#endif
+LUAI_FUNC bool luaV_searchelement(lua_State* L, const Table* t, const TValue* element);

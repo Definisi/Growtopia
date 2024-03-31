@@ -15,61 +15,70 @@
 namespace events {
 	void send_map_data(EventContext& ctx) {
 		std::lock_guard<std::mutex> lock(ctx.m_client->m_mutex);
+		auto& world = ctx.m_client->m_world;
 
-		ctx.m_client->m_world.m_tiles.clear();
-		ctx.m_client->m_world.m_floating_items.clear();
+		world.m_tiles.clear();
+		world.m_floating_items.clear();
 
 		BinaryReader reader(ctx.m_extended_data, ctx.m_game_packet->m_data_size);
 		
-		ctx.m_client->m_world.m_version = reader.read<uint16_t>();
+		world.m_version = reader.read<uint16_t>();
 		reader.skip(4);
 
 		uint16_t length = reader.read<uint16_t>();
-		ctx.m_client->m_world.m_name = reader.read(length);
-		ctx.m_client->m_world.m_width = reader.read<uint32_t>();
-		ctx.m_client->m_world.m_height = reader.read<uint32_t>();
-		ctx.m_client->m_world.m_tile_count = reader.read<uint32_t>();
+		world.m_name = reader.read(length);
+		world.m_width = reader.read<uint32_t>();
+		world.m_height = reader.read<uint32_t>();
+		world.m_tile_count = reader.read<uint32_t>();
 		reader.skip(5);
-		for (uint32_t y = 0; y < ctx.m_client->m_world.m_height; ++y) {
-			for (uint32_t x = 0; x < ctx.m_client->m_world.m_width; ++x) {
-				Tile tile;
-				Vector2i pos(x, y);
-				tile.m_pos = pos;
-				tile.m_foreground = reader.read<uint16_t>();
-				tile.m_background = reader.read<uint16_t>();
-				tile.m_lock_parent = reader.read<uint16_t>();
-				tile.m_flags = reader.read<uint16_t>();
+		uint32_t width = world.m_width;
 
-				const Item& item = item_database->get_item(tile.m_foreground);
+		for (uint32_t i = 0; i < world.m_height * width; ++i) {
+			uint32_t y = i / width;
+			uint32_t x = i % width;
 
-				if ((tile.m_flags & TileFlag::TILE_EXTRA) || item.m_has_extra)
-					tile.read_tile_extra(reader, ctx.m_client->m_world.m_version);
+			Tile tile;
+			Vector2i pos(x, y);
+			tile.m_pos = pos;
+			tile.m_foreground = reader.read<uint16_t>();
+			tile.m_background = reader.read<uint16_t>();
+			tile.m_lock_parent = reader.read<uint16_t>();
+			tile.m_flags = reader.read<uint16_t>();
 
-				if (tile.m_foreground == 242 ||
-					tile.m_foreground == 1796 ||
-					tile.m_foreground == 4802 ||
-					tile.m_foreground == 5260 ||
-					tile.m_foreground == 7188 ||
-					tile.m_foreground == 11550) {
-					ctx.m_client->m_world.m_owner_uid = tile.m_owner_uid;
-					ctx.m_client->m_world.m_access_list = tile.m_access_list;
-				}
+			const Item& item = item_database->get_item(tile.m_foreground);
 
-				ctx.m_client->m_world.m_tiles.push_back(tile);
+			if (tile.m_lock_parent)
+				reader.skip(2);
+
+			if ((tile.m_flags & TileFlag::TILE_EXTRA) || item.m_has_extra)
+				tile.read_tile_extra(reader, world.m_version);
+
+			if (tile.m_foreground == 242 ||
+				tile.m_foreground == 1796 ||
+				tile.m_foreground == 4802 ||
+				tile.m_foreground == 5260 ||
+				tile.m_foreground == 7188 ||
+				tile.m_foreground == 11550) {
+				world.m_owner_uid = tile.m_owner_uid;
+				world.m_access_list = tile.m_access_list;
 			}
+			//std::cout << "Index " << i << " | fg " << tile.m_foreground << " | bg " << tile.m_background << std::endl;
+			world.m_tiles.push_back(tile);
 		}
+
 		reader.skip(12);
-		ctx.m_client->m_world.m_floating_item_count = reader.read<uint32_t>();
-		ctx.m_client->m_world.m_last_floating_item_offset = reader.read<uint32_t>();
-		for (uint32_t index = 0; index < ctx.m_client->m_world.m_floating_item_count; index++) {
+		world.m_floating_item_count = reader.read<uint32_t>();
+		world.m_last_floating_item_offset = reader.read<uint32_t>();
+		for (uint32_t index = 0; index < world.m_floating_item_count; index++) {
 			FloatingItem m_floating_item;
-			m_floating_item.item_id = reader.read<uint16_t>();
-			m_floating_item.pos.m_x = reader.read<float>();
-			m_floating_item.pos.m_y = reader.read<float>();
-			m_floating_item.amount  = reader.read<uint8_t>();
-			m_floating_item.flags = reader.read<uint8_t>();
-			m_floating_item.drop_id_offset = reader.read<uint32_t>();
-			ctx.m_client->m_world.m_floating_items.push_back(m_floating_item);
+			m_floating_item.m_item_id = reader.read<uint16_t>();
+			m_floating_item.m_pos.m_x = reader.read<float>();
+			m_floating_item.m_pos.m_y = reader.read<float>();
+			m_floating_item.m_amount  = reader.read<uint8_t>();
+			m_floating_item.m_flags = reader.read<uint8_t>();
+			m_floating_item.m_drop_id_offset = reader.read<uint32_t>();
+			world.m_floating_items.push_back(m_floating_item);
 		}
+		ctx.m_client->status = BotStatus::ONLINE;
 	}
 }

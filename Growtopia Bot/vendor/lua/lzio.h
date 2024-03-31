@@ -1,12 +1,9 @@
+#pragma once
 /*
 ** $Id: lzio.h $
 ** Buffered streams
 ** See Copyright Notice in lua.h
 */
-
-
-#ifndef lzio_h
-#define lzio_h
 
 #include "lua.h"
 
@@ -37,9 +34,9 @@ typedef struct Mbuffer {
 
 
 #define luaZ_resizebuffer(L, buff, size) \
-	((buff)->buffer = luaM_reallocvchar(L, (buff)->buffer, \
-				(buff)->buffsize, size), \
-	(buff)->buffsize = size)
+    ((buff)->buffer = luaM_reallocvchar(L, (buff)->buffer, \
+                (buff)->buffsize, size), \
+    (buff)->buffsize = size)
 
 #define luaZ_freebuffer(L, buff)	luaZ_resizebuffer(L, buff, 0)
 
@@ -62,5 +59,3 @@ struct Zio {
 
 
 LUAI_FUNC int luaZ_fill (ZIO *z);
-
-#endif

@@ -1,15 +1,11 @@
+#pragma once
 /*
 ** $Id: ltm.h $
 ** Tag methods
 ** See Copyright Notice in lua.h
 */
 
-#ifndef ltm_h
-#define ltm_h
-
-
 #include "lobject.h"
-#include "lstate.h"
 
 
 /*
@@ -44,6 +40,17 @@ typedef enum {
   TM_CLOSE,
   TM_N		/* number of elements in the enum */
 } TMS;
+
+
+static const char *const luaT_eventname[] = {  /* ORDER TM */
+  "__index", "__newindex",
+  "__gc", "__mode", "__len", "__eq",
+  "__add", "__sub", "__mul", "__mod", "__pow",
+  "__div", "__idiv",
+  "__band", "__bor", "__bxor", "__shl", "__shr",
+  "__unm", "__bnot", "__lt", "__le",
+  "__concat", "__call", "__close"
+};
 
 
 /*
@@ -96,9 +103,6 @@ LUAI_FUNC int luaT_callorderiTM (lua_State *L, const TValue *p1, int v2,
                                  int inv, int isfloat, TMS event);
 
 LUAI_FUNC void luaT_adjustvarargs (lua_State *L, int nfixparams,
-                                   CallInfo *ci, const Proto *p);
-LUAI_FUNC void luaT_getvarargs (lua_State *L, CallInfo *ci,
+                                   struct CallInfo *ci, const Proto *p);
+LUAI_FUNC void luaT_getvarargs (lua_State *L, struct CallInfo *ci,
                                               StkId where, int wanted);
-
-
-#endif

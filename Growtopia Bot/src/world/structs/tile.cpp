@@ -30,6 +30,10 @@ void Tile::read_tile_extra(BinaryReader& reader, uint16_t world_version) {
 			uint32_t uid = reader.read<uint32_t>();
 			m_access_list.push_back(uid);
 		}
+		reader.skip(8);
+		if (m_foreground == 5814) {// Guild Lock
+			reader.skip(16);
+		}
 		break;
 	}
 	case TileExtraType::SEED: {
@@ -41,50 +45,22 @@ void Tile::read_tile_extra(BinaryReader& reader, uint16_t world_version) {
 	}
 	case TileExtraType::FOSSIL:
 		break;
-	case TileExtraType::MAILBOX:
-	case TileExtraType::BULLETIN:
-	case TileExtraType::DONATION_BOX:
-	case TileExtraType::TOYBOX: {
-		uint16_t length = reader.read<uint16_t>();
-		reader.read(length);
-
-		length = reader.read<uint16_t>();
-		reader.read(length);
-
-		length = reader.read<uint16_t>();
-		reader.read(length);
-
-		reader.skip(1);
-
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
-
 	case TileExtraType::RANDOM_BLOCK: {
 		m_display_item = reader.read<uint8_t>();
 		break;
 	}
 	case TileExtraType::PROVIDER: {
 		m_ready_time = reader.read<uint32_t>();
+		if (m_foreground != 5318 && (m_foreground != 10656) || world_version < 17) {
+			break;
+		}
+		reader.skip(4);
 		break;
 	}
+
 	case TileExtraType::ACHIEVEMENT_BLOCK: {
-		reader.skip(5);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+		reader.skip(4);
+		reader.skip(1);
 		break;
 	}
 	case TileExtraType::HEART_MONITOR: {
@@ -107,16 +83,9 @@ void Tile::read_tile_extra(BinaryReader& reader, uint16_t world_version) {
 		m_display_item = reader.read<uint8_t>();
 		break;
 	}
-	case TileExtraType::EXTRA18: {
-		reader.skip(5);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+	case TileExtraType::XENONITE_CRYSTAL: {
+		reader.skip(1);
+		reader.skip(4);
 		break;
 	}
 	case TileExtraType::PHONE_BOOTH: {
@@ -143,66 +112,31 @@ void Tile::read_tile_extra(BinaryReader& reader, uint16_t world_version) {
 	}
 	case TileExtraType::VENDING_MACHINE: {
 		m_display_item = reader.read<uint32_t>();
-		reader.skip(4);
+		m_price_item = reader.read<uint32_t>();
 		break;
 	}
-	case TileExtraType::SOLAR_COLLECTOR: {
+	case TileExtraType::FISHTANK: {
 		reader.skip(1);
-		uint32_t size = reader.read<uint32_t>();
-		reader.skip(4 * size);
+		uint32_t length = reader.read<uint32_t>();
+		reader.skip(length * 4);
 		break;
 	}
-	case TileExtraType::EXTRA26: {
-		reader.skip(5);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
-	case TileExtraType::FORGE: {
+
+	case TileExtraType::SOLAR: {
+		reader.skip(1);
 		reader.skip(4);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
 		break;
 	}
-	case TileExtraType::GIVING_TREE: {
+
+	case TileExtraType::DECO: {
 		reader.skip(1);
 		m_ready_time = reader.read<uint32_t>();
 		reader.skip(1);
 		break;
 	}
-	case TileExtraType::EXTRA29:{
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
-	case TileExtraType::EXTRA30: {
-		reader.skip(5);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+	case TileExtraType::STEAM_ORGAN: {
+		reader.skip(1);
+		reader.skip(4);
 		break;
 	}
 	case TileExtraType::SILKWORM: {
@@ -215,32 +149,16 @@ void Tile::read_tile_extra(BinaryReader& reader, uint16_t world_version) {
 		break;
 	}
 	case TileExtraType::SEWING_MACHINE: {
-		reader.read<uint32_t>();
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+		uint32_t length = reader.read<uint32_t>();
+		reader.skip(length * 4);
 		break;
 	}
 	case TileExtraType::COUNTRY_FLAG: {
 		if (m_foreground != 3394) {
-			if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-				if (m_foreground == 5814) {
-					reader.skip(16);
-				}
-				else {
-					reader.skip(17);
-				}
-			}
+			break;
 		}
-		else {
-			uint16_t length = reader.read<uint16_t>();
-			reader.read(length);
-		}
+		uint16_t length = reader.read<uint16_t>();
+		reader.read(length); // ex : us | id | my ....
 		break;
 	}
 	case TileExtraType::LOBSTER_TRAP:
@@ -253,46 +171,36 @@ void Tile::read_tile_extra(BinaryReader& reader, uint16_t world_version) {
 	}
 	case TileExtraType::BATTLE_PET_CAGE: {
 		uint16_t length = reader.read<uint16_t>();
-		reader.read(length);
+		m_label = reader.read(length);
 		reader.skip(12);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+
 		break;
 	}
 	case TileExtraType::PET_TRAINER: {
 		uint16_t length = reader.read<uint16_t>();
-		reader.read(length);
-		reader.skip(32);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+		reader.skip(length);
+		uint32_t length2 = reader.read<uint32_t>();
+		reader.skip(length2 * 4);
+		break;
+	}
+	case TileExtraType::STEAM_ENGINE: {
+		reader.skip(4);
+		break;
+	}
+	case TileExtraType::LOCK_BOT: {
+		reader.skip(4);
 		break;
 	}
 	case TileExtraType::WEATHER_SPECIAL: {
 		m_display_item = reader.read<uint32_t>();
 		break;
 	}
-	case TileExtraType::EXTRA42: {
+	case TileExtraType::SPIRIT_STORAGE: {
+		reader.skip(4);
+		break;
+	}
+	case TileExtraType::DATA_BEDROCK: {
 		reader.skip(21);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
 		break;
 	}
 	case TileExtraType::DISPLAY_SHELF: {
@@ -310,17 +218,6 @@ void Tile::read_tile_extra(BinaryReader& reader, uint16_t world_version) {
 		}
 		break;
 	}
-	case TileExtraType::EXTRA45: {
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
 	case TileExtraType::FISH_MOUNT: {
 		uint16_t length = reader.read<uint16_t>();
 		m_label = reader.read(length);
@@ -331,35 +228,27 @@ void Tile::read_tile_extra(BinaryReader& reader, uint16_t world_version) {
 	case TileExtraType::PORTRAIT: {
 		uint16_t length = reader.read<uint16_t>();
 		m_label = reader.read(length);
-		reader.read<uint32_t>();
-		reader.read<uint32_t>();
-		reader.read<uint32_t>();
-		reader.read<uint32_t>();
+		reader.skip(4);
+		reader.skip(4);
+		reader.skip(4);
+		reader.skip(4);
 		uint16_t face_clothing = reader.read<uint16_t>();
 		uint16_t hat_clothing = reader.read<uint16_t>();
 		uint16_t back_clothing = reader.read<uint16_t>();
 		if (world_version > 3) {
-			if (face_clothing == 5712 || face_clothing == 10044 ||
-				hat_clothing == 5172 || hat_clothing == 10044 ||
+			if (face_clothing == 5712 || face_clothing == 10044 || // will of the wild or golems gift
+				hat_clothing == 5712 || hat_clothing == 10044 ||
 				back_clothing == 5712 || back_clothing == 10044) {
-				reader.read<uint32_t>();
-				reader.read<uint32_t>();
+				reader.skip(4);
+				reader.skip(4);
 			}
 		}
 		if (world_version > 8) {
-			reader.read<uint32_t>();
+			reader.skip(4);
 		}
-		if (world_version > 22 && hat_clothing == 12958) {
+		if (world_version > 22 && hat_clothing == 12958) { // infinity crown
 			uint16_t length = reader.read<uint16_t>();
-			reader.read(length);
-		}
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
+			reader.skip(length);
 		}
 		break;
 	}
@@ -372,43 +261,17 @@ void Tile::read_tile_extra(BinaryReader& reader, uint16_t world_version) {
 		m_ready_time = reader.read<uint32_t>();
 		break;
 	}
-	case TileExtraType::DNA_PROCESSOR: {
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+	case TileExtraType::DNA_PROCESSOR:
 		break;
-	}
-	case TileExtraType::HOWLER: {
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
+
 	case TileExtraType::CHEMSYNTH_TANK: {
-		reader.skip(8);
+		reader.skip(4);
+		reader.skip(4);
 		break;
 	}
 	case TileExtraType::STORAGE_BOX: {
 		uint16_t length = reader.read<uint16_t>();
-		reader.read(length);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+		reader.skip(length);
 		break;
 	}
 	case TileExtraType::COOKING_OVEN: {
@@ -422,76 +285,21 @@ void Tile::read_tile_extra(BinaryReader& reader, uint16_t world_version) {
 	}
 	case TileExtraType::AUDIO_BLOCK: {
 		uint16_t length = reader.read<uint16_t>();
-		reader.read(length);
+		reader.skip(length);
 		reader.skip(4);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
 		break;
 	}
 	case TileExtraType::GEIGER_CHARGER: {
 		m_ready_time = reader.read<uint32_t>();
 		break;
 	}
-	case TileExtraType::ADVENTURE_BEGIN: {
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
-	case TileExtraType::TOMB_ROBBER: {
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
-	case TileExtraType::EXTRA60: {
-		reader.skip(5);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+	case TileExtraType::FACTION: {
+		reader.skip(1);
+		reader.skip(4);
 		break;
 	}
 	case TileExtraType::TRAINING_PORT: {
-		reader.skip(4);
-		reader.skip(1);
-		reader.skip(1);
-		reader.skip(4);
-		reader.skip(4);
-		reader.skip(4);
-		reader.skip(4);
-		reader.skip(4);
-		reader.skip(4);
-		reader.skip(4);
-		reader.skip(1);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+		reader.skip(35);
 		break;
 	}
 	case TileExtraType::MAGPLANT: {
@@ -500,221 +308,100 @@ void Tile::read_tile_extra(BinaryReader& reader, uint16_t world_version) {
 		break;
 	}
 	case TileExtraType::ROBOT: {
-		reader.skip(reader.read<uint32_t>() * 15);
-		reader.skip(8);
+		uint32_t length = reader.read<uint32_t>();
+		for (int i = 0; i < length; i++) {
+			reader.skip(4);
+			reader.skip(1);
+			reader.skip(4);
+			reader.skip(4);
+			uint16_t length2 = reader.read<uint16_t>();
+			reader.skip(length2);
+		}
+		reader.skip(4);
+		reader.skip(4);
 		break;
 	}
-	case TileExtraType::EXTRA64: {
-		uint16_t length = reader.read<uint16_t>();
-		reader.read(length);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+	case TileExtraType::GUILD_ITEM: {
+		reader.skip(1);
+		reader.skip(16);
 		break;
 	}
 	case TileExtraType::GROWSCAN9000: {
 		reader.skip(1);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
 		break;
 	}
-	case TileExtraType::EXTRA67: {
+	case TileExtraType::FIELD_NODE: {
 		reader.skip(4);
-		reader.skip(reader.read<uint32_t>() * 4);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+		uint32_t length = reader.read<uint32_t>();
+		reader.skip(length * 4);
 		break;
 	}
-	case TileExtraType::EXTRA68: {
+	case TileExtraType::SPIRIT_BOARD: {
 		reader.skip(4);
+
 		uint16_t length = reader.read<uint16_t>();
-		reader.read(length);
+		reader.skip(length);
+
 		length = reader.read<uint16_t>();
-		reader.read(length);
-		reader.skip(4);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+		reader.skip(length);
+
+
+		uint32_t length2 = reader.read<uint32_t>();
+		reader.skip(length2 * 4);
 		break;
 	}
-	case TileExtraType::EXTRA69:
-	case TileExtraType::EXTRA70:
-		reader.skip(4);
-		reader.skip(4);
-		if (world_version < 8u) {
-			if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-				if (m_foreground == 5814) {
-					reader.skip(16);
-				}
-				else {
-					reader.skip(17);
-				}
-			}
-			break;
-		}
-		reader.skip(4);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
 	case TileExtraType::SUCKER2: {
 		reader.skip(4);
 		reader.skip(4);
-		if (world_version >= 8u) {
+		reader.skip(4);
+		if (world_version > 7)
 			reader.skip(4);
-		}
 		reader.skip(4);
 		reader.skip(4);
 		reader.skip(1);
 		reader.skip(1);
 		reader.skip(4);
-		reader.skip(4);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
-	case TileExtraType::EXTRA72: {
-		reader.skip(4);
-		reader.skip(4);
-		reader.skip(4);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
-	case TileExtraType::DISAPPEAR_WHEN_STEPPED_ON: {
-		reader.skip(4);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
-	case TileExtraType::SAFE_VAULT: {
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
-	case TileExtraType::EXTRA75: {
-		reader.skip(4);
-		uint16_t length = reader.read<uint16_t>();
-		reader.read(length);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
-	}
-	case TileExtraType::EXTRA76: {
-		reader.skip(3 * 24);
 		reader.skip(4);
 
-		uint32_t size = reader.read<uint32_t>();
-		reader.skip(8 * size);
+		break;
+	}
+	case TileExtraType::LIGHTNIG_IF_ON: {
+		reader.skip(4);
+		reader.skip(4);
+		reader.skip(4);
+		break;
+	}
+	case TileExtraType::PHASED_BLOCK: {
+		reader.skip(4);
+		break;
+	}	
+	case TileExtraType::PHASED_BLOCK2: {
+		reader.skip(4);
+		uint16_t length = reader.read<uint16_t>();
+		reader.skip(length);
 		break;
 	}
 	case TileExtraType::INFINITY_WEATHER_MACHINE: {
 		reader.skip(4);
-		uint32_t size = reader.read<uint32_t>();
-		reader.skip(size * 4);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
+		uint32_t length2 = reader.read<uint32_t>();
+		reader.skip(length2 * 4);
+		break;
+	}
+	case TileExtraType::FEEDING_BLOCK: {
+		reader.skip(4);
 		break;
 	}
 	case TileExtraType::KRANKEN_S_GALACTIC_BLOCK: {
 		reader.skip(4);
 		reader.skip(4);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
+		break;	
 	}
-	case TileExtraType::EXTRA81: {
+	case TileExtraType::FRIENDS_ENTRANCE: {
 		reader.skip(4);
 		reader.skip(4);
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
 		break;
 	}
 	default:
-		if (item_database->get_item(m_foreground).bytes_80[9] & 2) {
-			if (m_foreground == 5814) {
-				reader.skip(16);
-			}
-			else {
-				reader.skip(17);
-			}
-		}
-		break;
 		std::cout << std::format("Foreground -> {}", m_foreground) << std::endl;
 		std::cout << std::format("X -> {}", m_pos.m_x) << std::endl;
 		std::cout << std::format("Y -> {}", m_pos.m_y) << std::endl;

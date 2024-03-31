@@ -4,12 +4,11 @@
 #include <mutex>
 #include <unordered_map>
 
-extern "C" {
 #include <lua/lua.h>
 #include <lua/lauxlib.h>
 #include <lua/lualib.h>
-}
-#include <proton/variant.hpp>
+
+#include <proton/variant.hpp> 
 
 #include <client/client_pool.hpp>
 #include <lapi/events/event_context.hpp>
@@ -38,11 +37,14 @@ namespace lua {
 			static int l_get_inventory(lua_State* state);
 			static int l_get_player(lua_State* state);
 			static int l_get_world(lua_State* state);
-			static int l_move_toward(lua_State* state);
+			static int l_find_path(lua_State* state);
 			static int l_place(lua_State* state);
+			static int l_auto_collect(lua_State* state);
+			static int l_collect(lua_State* state);
 			static int l_punch(lua_State* state);
 			static int l_send_packet(lua_State* state);
-			static int l_teleport(lua_State* state);
+			static int l_send_packet_raw(lua_State* state);
+			static int l_move(lua_State* state);
 			static int l_warp(lua_State* state);
 			static int l_wear(lua_State* state);
 			static int l_wrench(lua_State* state);

@@ -8,8 +8,7 @@ namespace events {
 	void ping_request(EventContext& ctx) {
 		GameUpdatePacket* game_packet_in = ctx.m_game_packet;
 
-		GameUpdatePacket game_packet_out;
-		
+		GameUpdatePacket game_packet_out{ 0 };
 		game_packet_out.m_type = NET_GAME_PACKET_PING_REPLY;
 		game_packet_out.m_ping_hash = game_packet_in->m_ping_hash;
 		game_packet_out.m_int_data = game_packet_in->m_int_data;

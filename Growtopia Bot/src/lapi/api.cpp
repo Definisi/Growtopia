@@ -159,9 +159,18 @@ namespace lua {
 			lua_xmove(state, new_state, 1);
 			lua_setglobal(new_state, "get_world");
 
-			lua_getglobal(state, "move_toward");
+			lua_getglobal(state, "find_path");
 			lua_xmove(state, new_state, 1);
-			lua_setglobal(new_state, "move_toward");
+			lua_setglobal(new_state, "find_path");
+
+
+			lua_getglobal(state, "collect");
+			lua_xmove(state, new_state, 1);
+			lua_setglobal(new_state, "collect");
+
+			lua_getglobal(state, "auto_collect");
+			lua_xmove(state, new_state, 1);
+			lua_setglobal(new_state, "auto_collect");
 
 			lua_getglobal(state, "place");
 			lua_xmove(state, new_state, 1);
@@ -175,9 +184,13 @@ namespace lua {
 			lua_xmove(state, new_state, 1);
 			lua_setglobal(new_state, "send_packet");
 
-			lua_getglobal(state, "teleport");
+			lua_getglobal(state, "send_packet_raw");
 			lua_xmove(state, new_state, 1);
-			lua_setglobal(new_state, "teleport");
+			lua_setglobal(new_state, "send_packet_raw");
+
+			lua_getglobal(state, "move");
+			lua_xmove(state, new_state, 1);
+			lua_setglobal(new_state, "move");
 
 			lua_getglobal(state, "warp");
 			lua_xmove(state, new_state, 1);
@@ -235,10 +248,13 @@ namespace lua {
 			lua_register(state, "get_inventory", client::l_get_inventory);
 			lua_register(state, "get_player", client::l_get_player);
 			lua_register(state, "get_world", client::l_get_world);
-			lua_register(state, "move_toward", client::l_move_toward);
+			lua_register(state, "find_path", client::l_find_path);
 			lua_register(state, "place", client::l_place);
 			lua_register(state, "send_packet", client::l_send_packet);
-			lua_register(state, "teleport", client::l_teleport);
+			lua_register(state, "send_packet_raw", client::l_send_packet_raw);
+			lua_register(state, "move", client::l_move);
+			lua_register(state, "auto_collect", client::l_auto_collect);
+			lua_register(state, "collect", client::l_collect);
 			lua_register(state, "punch", client::l_punch);
 			lua_register(state, "warp", client::l_warp);
 			lua_register(state, "wear", client::l_wear);
@@ -392,8 +408,12 @@ namespace lua {
 
 					lua_newtable(state);
 
-					lua_pushliteral(state, "name");
+					lua_pushliteral(state, "name"); 
 					lua_pushstring(state, client->m_login_info.m_tank_id_name.c_str());
+					lua_settable(state, -3);
+
+					lua_pushliteral(state, "status");
+					lua_pushstring(state, client->get_status_string().c_str());
 					lua_settable(state, -3);
 
 					lua_pushliteral(state, "net_id");
@@ -548,6 +568,55 @@ namespace lua {
 						return 1;
 						});
 					lua_setfield(state, -2, "get_tile");
+
+					lua_pushcfunction(state, [](lua_State* state) -> int {
+						Client* client = l_get_client(state);
+
+						if (client) {
+							std::lock_guard<std::mutex> lock(client->m_mutex);
+
+							lua_newtable(state);
+
+							int index = 0;
+							for (const auto& item : client->m_world.m_floating_items) {
+								lua_pushinteger(state, ++index);
+
+								lua_newtable(state);
+
+								lua_pushliteral(state, "item_id");
+								lua_pushinteger(state, item.m_item_id);
+								lua_settable(state, -3);
+
+								lua_pushliteral(state, "amount");
+								lua_pushinteger(state, item.m_amount);
+								lua_settable(state, -3);
+
+								lua_pushliteral(state, "x");
+								lua_pushinteger(state, item.m_pos.m_x);
+								lua_settable(state, -3);
+
+								lua_pushliteral(state, "y");
+								lua_pushinteger(state, item.m_pos.m_y);
+								lua_settable(state, -3);
+
+								lua_pushliteral(state, "flags");
+								lua_pushboolean(state, item.m_flags);
+								lua_settable(state, -3);
+
+								lua_pushliteral(state, "drop_id_offset");
+								lua_pushboolean(state, item.m_drop_id_offset);
+								lua_settable(state, -3);
+
+								lua_settable(state, -3);
+							}
+						}
+						else {
+							lua_pushnil(state);
+						}
+
+						return 1;
+						});
+					lua_setfield(state, -2, "get_floating_items");
 				}
 				else {
 					lua_pushnil(state);
@@ -556,7 +625,7 @@ namespace lua {
 				return 1;
 			}
 
-			static int l_move_toward(lua_State* state) {
+			static int l_find_path(lua_State* state) {
 				Client* client = l_get_client(state);
 
 				if (client) {
@@ -582,6 +651,30 @@ namespace lua {
 					int id = luaL_checkinteger(state, 3);
 
 					client->place(x, y, id);
+				}
+
+				return 0;
+			}
+
+			int l_auto_collect(lua_State* state)
+			{
+				Client* client = l_get_client(state);
+
+				if (client) {
+					client->m_macro.auto_collect = lua_toboolean(state, 1);
+					client->m_macro.auto_collect_range = luaL_checkinteger(state, 2);
+					client->m_macro.auto_collect_interval = luaL_checkinteger(state, 3);
+					client->m_macro.auto_collect_force = lua_toboolean(state, 4);
+				}
+				return 0;
+			}
+
+			int l_collect(lua_State* state)
+			{
+				Client* client = l_get_client(state);
+
+				if (client) {
+					client->collect(luaL_checkinteger(state, 1), lua_toboolean(state, 2));
 				}
 
 				return 0;
@@ -613,7 +706,53 @@ namespace lua {
 				return 0;
 			}
 
-			static int l_teleport(lua_State* state) {
+			static int l_send_packet_raw(lua_State* state) {
+				Client* client = l_get_client(state);
+
+				if (client) {
+					GameUpdatePacket packet;
+					if (lua_getfield(state, 1, "type") != LUA_TNIL)
+						packet.m_type = (uint8_t)luaL_checkinteger(state, -1);
+
+					if (lua_getfield(state, 1, "obj_type") != LUA_TNIL)
+						packet.m_object_type = (uint8_t)luaL_checkinteger(state, -1);
+
+					if (lua_getfield(state, 1, "count1") != LUA_TNIL)
+						packet.m_count1 = (uint8_t)luaL_checkinteger(state, -1);
+
+					if (lua_getfield(state, 1, "count2") != LUA_TNIL)
+						packet.m_count2 = (uint8_t)luaL_checkinteger(state, -1);
+
+					if (lua_getfield(state, 1, "net_id") != LUA_TNIL)
+						packet.m_net_id = (int32_t)luaL_checkinteger(state, -1);
+
+					if (lua_getfield(state, 1, "int_data") != LUA_TNIL)
+						packet.m_int_data = (int32_t)luaL_checkinteger(state, -1);
+
+					if (lua_getfield(state, 1, "pos_x") != LUA_TNIL)
+						packet.m_pos_x = (float)luaL_checkinteger(state, -1);
+
+					if (lua_getfield(state, 1, "pos_y") != LUA_TNIL)
+						packet.m_pos_y = (float)luaL_checkinteger(state, -1);
+
+					if (lua_getfield(state, 1, "pos2_x") != LUA_TNIL)
+						packet.m_pos2_x = (float)luaL_checkinteger(state, -1);
+
+					if (lua_getfield(state, 1, "pos2_y") != LUA_TNIL)
+						packet.m_pos2_y = (float)luaL_checkinteger(state, -1);
+
+					if (lua_getfield(state, 1, "int_x") != LUA_TNIL)
+						packet.m_int_x = (uint32_t)luaL_checkinteger(state, -1);
+
+					if (lua_getfield(state, 1, "int_u") != LUA_TNIL)
+						packet.m_int_y = (uint32_t)luaL_checkinteger(state, -1);
+
+					client->send_packet(NET_MESSAGE_GAME_PACKET, &packet, sizeof(GameUpdatePacket));
+				}
+				return 0;
+			}
+
+			static int l_move(lua_State* state) {
 				Client* client = l_get_client(state);
 
 				if (client) {

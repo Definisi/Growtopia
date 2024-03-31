@@ -22,14 +22,14 @@ public:
 
 	ENetSocks5Info m_socks5_info;
 
-	float m_game_version{ 4.51 };
+	std::string m_game_version = "0";
 
 	int32_t m_fhash{ -716928004 };
 	int32_t m_hash{ -964334282 };
 	int32_t m_token{};
 	int32_t m_user{};
-	int32_t m_fz{ 51238952 };
-	int32_t m_zf{ 677532082 };
+	int32_t m_fz{ 41380888 };
+	int32_t m_zf{ 371936056 };
 
 	std::string m_tank_id_name{};
 	std::string m_tank_id_pass{};
@@ -51,13 +51,14 @@ public:
 	uint8_t m_device_version{ 0 };
 
 	uint16_t m_hash2{};
-	uint16_t m_protocol{ 206 };
+	uint16_t m_protocol{ 0 };
 	uint16_t m_lmode{};
 	uint16_t m_cbits{ 1024 };
 
 	uint32_t m_total_playtime{};
 
 	bool request_server_data();
+	bool request_app_data();
 
 	void reset();
 };

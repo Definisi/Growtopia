@@ -10,6 +10,8 @@ public:
     ClientPool() = default;
     ~ClientPool() = default;
 
+    int selected_bot = -1;
+
     void initialize();
 
     std::shared_ptr<Client> add(const std::string& tank_id_name, const std::string& tank_id_pass);
