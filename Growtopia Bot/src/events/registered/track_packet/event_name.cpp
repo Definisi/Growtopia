@@ -59,6 +59,20 @@ enum class login_error {
 void events::event_name(EventContext& ctx)
 {
 	//std::cout << ctx.m_scanner.get_all() << std::endl;
+    int level1 = 0; 
+    int level2 = 0; 
+
+    if (!ctx.m_scanner.get("level", 0).empty())
+        level1 = std::stoi(ctx.m_scanner.get("level", 0));
+
+    if (!ctx.m_scanner.get("Level", 0).empty())
+        level2 = std::stoi(ctx.m_scanner.get("Level", 0));
+
+    if (level1 > 0)
+        ctx.m_client->m_level.store(level1, std::memory_order_relaxed);
+    
+    if (level2 > 0)
+        ctx.m_client->m_level.store(level2, std::memory_order_relaxed);
 
     const std::string& error = ctx.m_scanner.get("Authentication_error", 0);
     if (!error.empty()) {

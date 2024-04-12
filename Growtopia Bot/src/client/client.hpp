@@ -63,6 +63,7 @@ public:
 	std::atomic<bool> m_is_listening_events{ false };
 	std::atomic<bool> m_is_pathfinding{ false };
 	std::atomic<uint32_t> m_gem_count{ 0 };
+	std::atomic<uint32_t> m_level{ 0 };
 	
 	BotStatus status = BotStatus::OFFLINE;
 	std::string get_status_string();

@@ -34,6 +34,7 @@ namespace Gui {
 	std::string username;
 	std::string password;
 	std::string proxy;
+	std::string world_name;
 
 	void create_hwindow(LPCWSTR windowName);
 	void destroy_hwindow();

@@ -542,7 +542,7 @@ void Client::collect(const uint32_t& range, bool force)
 		return;
 	for (const auto& item : m_world.m_floating_items) {
 		if (m_player.m_pos.distance(item.m_pos.m_x, item.m_pos.m_y) <= range * 32) {
-			GameUpdatePacket game_packet{ 0 };
+			GameUpdatePacket game_packet{ 0 }; 
 			game_packet.m_pos_x = item.m_pos.m_x;
 			game_packet.m_pos_y = item.m_pos.m_y;
 			game_packet.m_type = NET_GAME_PACKET_ITEM_ACTIVATE_OBJECT_REQUEST;
@@ -562,7 +562,7 @@ void Client::service_poll() {
 
 	ENetEvent event;
 
-	while (enet_host_service(m_host, &event, 10) > 0) {
+	while (enet_host_service(m_host, &event, 0) > 0) {
 		switch (event.type) {
 		case ENET_EVENT_TYPE_CONNECT:
 			//std::cout << "ENET_EVENT_TYPE_CONNECT" << std::endl;

@@ -56,6 +56,10 @@
     <ClInclude Include="src\utils\generate_mac.hpp" />
     <ClInclude Include="src\utils\hash_str.hpp" />
     <ClInclude Include="src\utils\hex_to_string.hpp" />
+    <ClInclude Include="src\utils\imgui\byte_array.hpp" />
+    <ClInclude Include="src\utils\imgui\etc_elements.hpp" />
+    <ClInclude Include="src\utils\imgui\font_awesome.hpp" />
+    <ClInclude Include="src\utils\imgui\nav_elements.hpp" />
     <ClInclude Include="src\utils\md5_sha256.hpp" />
     <ClInclude Include="src\utils\pathfinder.hpp" />
     <ClInclude Include="src\utils\random.hpp" />
@@ -296,6 +300,8 @@
     <ClCompile Include="src\player\inventory.cpp" />
     <ClCompile Include="src\server\http_server.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\utils\imgui\etc_elements.cpp" />
+    <ClCompile Include="src\utils\imgui\nav_elements.cpp" />
     <ClCompile Include="src\world\structs\tile.cpp" />
     <ClCompile Include="src\world\world.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
