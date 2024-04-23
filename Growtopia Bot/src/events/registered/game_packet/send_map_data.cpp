@@ -19,6 +19,7 @@ namespace events {
 
 		world.m_tiles.clear();
 		world.m_floating_items.clear();
+		world.m_players.clear();
 
 		BinaryReader reader(ctx.m_extended_data, ctx.m_game_packet->m_data_size);
 		

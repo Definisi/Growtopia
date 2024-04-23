@@ -823,6 +823,8 @@ CODE
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#include <utils/imgui/gui.hpp>
+
 #include "imgui.h"
 #ifndef IMGUI_DISABLE
 
@@ -6312,7 +6314,12 @@ void ImGui::RenderWindowTitleBarContents(ImGuiWindow* window, const ImRect& titl
     }
     //if (g.IO.KeyShift) window->DrawList->AddRect(layout_r.Min, layout_r.Max, IM_COL32(255, 128, 0, 255)); // [DEBUG]
     //if (g.IO.KeyCtrl) window->DrawList->AddRect(clip_r.Min, clip_r.Max, IM_COL32(255, 128, 0, 255)); // [DEBUG]
-    RenderTextClipped(layout_r.Min, layout_r.Max, name, NULL, &text_size, style.WindowTitleAlign, &clip_r);
+    if (window->Collapsed) {
+        RenderTextClipped(layout_r.Min, layout_r.Max, name, NULL, &text_size, style.WindowTitleAlign, &clip_r);
+    }
+    //auto window = ImGui::GetCurrentWindow();
+    //auto draw = window->DrawList;
+    //draw->AddText((layout_r.Min, layout_r.Max), gui.text.to_im_color(), name);
 }
 
 void ImGui::UpdateWindowParentAndRootLinks(ImGuiWindow* window, ImGuiWindowFlags flags, ImGuiWindow* parent_window)

@@ -79,7 +79,7 @@
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+extern "C++" {
 #endif
 
 typedef struct stbrp_context stbrp_context;

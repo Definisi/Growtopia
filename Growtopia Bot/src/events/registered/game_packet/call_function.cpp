@@ -136,6 +136,33 @@ namespace events {
 				Vector2i pos(x, y);
 				ctx.m_client->m_player.m_pos = pos;
 			}
+			else {
+				std::lock_guard<std::mutex> lock(ctx.m_client->m_mutex);
+
+				Player player1;
+				int net_id = std::stoi(scanner.get("netID", 0));
+				int user_id = std::stoi(scanner.get("userID", 0));
+				int x = std::stoi(scanner.get("posXY", 0));
+				int y = std::stoi(scanner.get("posXY", 1));
+
+				Vector2i pos(x, y);
+				player1.m_net_id = net_id;
+				player1.m_pos = pos;
+				player1.m_user_id = user_id;
+				ctx.m_client->m_world.m_players.push_back(player1);
+			}
+		}
+		else if (varlist[0].get<std::string>() == "OnRemove") {
+			std::lock_guard<std::mutex> lock(ctx.m_client->m_mutex);
+			TextScanner scanner(varlist[1].get<std::string>());
+			int net_id = std::stoi(scanner.get("netID", 0));
+			ctx.m_client->m_world.m_players.erase(
+				std::remove_if(ctx.m_client->m_world.m_players.begin(), ctx.m_client->m_world.m_players.end(),
+					[net_id](const Player& player) {
+						return player.m_net_id == net_id;
+					}),
+				ctx.m_client->m_world.m_players.end()
+			);
 		}
 		else if (varlist[0].get<std::string>() == "OnSetPos") {
 			std::lock_guard<std::mutex> lock(ctx.m_client->m_mutex);
@@ -159,6 +186,9 @@ namespace events {
 			world.m_name = "EXIT";
 			ctx.m_client->m_world = std::move(world);
 			ctx.m_client->status = BotStatus::ONLINE;
+			ctx.m_client->m_world.m_access_list.clear();
+			ctx.m_client->m_world.m_players.clear();
+			ctx.m_client->m_world.m_tiles.clear();
 		}
 	}
 }

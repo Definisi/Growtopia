@@ -5,6 +5,9 @@
 #include <world/structs/tile.hpp>
 #include <world/structs/floating_item.hpp>
 
+#include <player/player.hpp>
+
+
 struct World {
 
 	std::string m_name;
@@ -21,6 +24,7 @@ struct World {
 
 	uint32_t m_owner_uid;
 	std::vector<uint32_t> m_access_list;
+	std::vector<Player> m_players;
 
 	World& operator=(const World& other) {
 		if (this != &other) {

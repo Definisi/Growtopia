@@ -1,5 +1,6 @@
 #include <client/client_pool.hpp>
 
+#include <events/registered/game_packet/state.hpp>
 #include <events/registered/game_packet/call_function.hpp>
 #include <events/registered/game_packet/modify_item_inventory.hpp>
 #include <events/registered/game_packet/ping_request.hpp>
@@ -34,7 +35,14 @@ std::shared_ptr<Client> ClientPool::add(const std::string& tank_id_name, const s
 		client->m_login_info.m_tank_id_pass = tank_id_pass;
 	}
 
+	for (int i = 1; i <= 5; ++i) {
+		for (int j = 1; j <= 5; ++j) {
+			client->m_macro.auto_farm_tile[{i, j}] = false;
+		}
+	}
+
 	client->get_event_pool()->register_track("t_0", events::event_name);
+	client->get_event_pool()->register_packet(NET_GAME_PACKET_STATE, events::state);
 	client->get_event_pool()->register_packet(NET_GAME_PACKET_CALL_FUNCTION, events::call_function);
 	client->get_event_pool()->register_packet(NET_GAME_PACKET_MODIFY_ITEM_INVENTORY, events::modify_item_inventory);
 	client->get_event_pool()->register_packet(NET_GAME_PACKET_PING_REQUEST, events::ping_request);

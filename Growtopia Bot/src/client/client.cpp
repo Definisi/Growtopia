@@ -553,6 +553,27 @@ void Client::collect(const uint32_t& range, bool force)
 	}
 }
 
+void Client::smoke()
+{
+	if (m_world.m_players.size() == 0)
+		return;
+	if (m_macro.smoke_index >= m_world.m_players.size())
+		m_macro.smoke_index = 0;
+	auto player = m_world.m_players[m_macro.smoke_index];
+	static int x, y;
+	x = player.m_pos.m_x / 32, y = player.m_pos.m_y / 32;
+	GameUpdatePacket game_packet{ 0 };
+	game_packet.m_type = NET_GAME_PACKET_STATE;
+	game_packet.m_int_data = 2034;
+	game_packet.m_int_x = x;
+	game_packet.m_int_y = y;
+	game_packet.m_pos_x = m_player.m_pos.m_x;
+	game_packet.m_pos_y = m_player.m_pos.m_y;
+	game_packet.m_flags = 144 | (1 << 10) | (1 << 11);
+	this->send_packet(NET_MESSAGE_GAME_PACKET, &game_packet, sizeof(GameUpdatePacket));
+	m_macro.smoke_index++;
+}
+
 void Client::service_poll() {
 	if (!m_host)
 		return;
@@ -658,6 +679,10 @@ void Client::service_poll() {
 	uint64_t time = get_current_time<std::chrono::milliseconds>();
 	if (m_macro.auto_collect && ((m_macro.auto_collect_last + m_macro.auto_collect_interval) < time)) {
 		collect(m_macro.auto_collect_range, m_macro.auto_collect_force);
+		m_macro.auto_collect_last = time;
+	}
+	if ((m_macro.smoke_last + 50) < time) {
+		smoke();
 		m_macro.auto_collect_last = time;
 	}
 }

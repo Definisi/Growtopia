@@ -511,7 +511,7 @@ int main(int arg, char **argv)
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+extern "C++" {
 #endif
 
 // private structure

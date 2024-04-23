@@ -10,7 +10,6 @@ public:
     ClientPool() = default;
     ~ClientPool() = default;
 
-    int selected_bot = -1;
 
     void initialize();
 

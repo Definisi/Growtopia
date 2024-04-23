@@ -161,15 +161,15 @@ void Gui::create_imgui() {
 	ImGui::StyleColorsDark();
 
 
-	ImFontConfig font_cfg;
-	font_cfg.FontDataOwnedByAtlas = false;
-	font_cfg.MergeMode = true;
-	font_cfg.PixelSnapH = true;
+	//ImFontConfig font_cfg;
+	//font_cfg.FontDataOwnedByAtlas = false;
+	//font_cfg.MergeMode = true;
+	//font_cfg.PixelSnapH = true;
 
 	ImGuiIO& io = ::ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.IniFilename = nullptr;
-	io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\verdana.ttf", 13.f);
+	//io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\verdana.ttf", 13.f);
 
 	
 	ImGui_ImplWin32_Init(window);

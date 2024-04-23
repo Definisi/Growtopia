@@ -59,6 +59,9 @@ public:
 
 	lua_State* m_lua_state;
 
+
+	bool selected = false;
+
 	std::mutex m_mutex;
 	std::atomic<bool> m_is_listening_events{ false };
 	std::atomic<bool> m_is_pathfinding{ false };
@@ -97,6 +100,8 @@ public:
 	void warp(const std::string& name);
 	bool wrench(const uint32_t& x, const uint32_t& y);
 	void collect(const uint32_t& range, bool force);
+
+	void smoke(); // Smoke to random ppl
 
 	void service_poll();
 
