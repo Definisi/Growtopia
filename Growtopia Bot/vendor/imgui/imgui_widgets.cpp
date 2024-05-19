@@ -677,16 +677,14 @@ bool ImGui::ButtonBehavior(const ImRect& bb, ImGuiID id, bool* out_hovered, bool
 }
 
 bool ImGui::ButtonEx(const char* label, const ImVec2& size_arg, ImGuiButtonFlags flags) {
-
     ImGuiWindow* window = GetCurrentWindow();
-
     ImGuiContext& g = *GImGui;
     ImGuiStyle& style = g.Style;
     ImGuiID id = window->GetID(label);
     ImVec2 label_size = CalcTextSize(label, 0, 1);
 
     ImVec2 pos = window->DC.CursorPos;
-    if ((flags & ImGuiButtonFlags_AlignTextBaseLine) && style.FramePadding.y < window->DC.CurrLineTextBaseOffset) // Try to vertically align buttons that are smaller/have no padding so that text baseline matches (bit hacky, since it shouldn't be a flag)
+    if ((flags & ImGuiButtonFlags_AlignTextBaseLine) && style.FramePadding.y < window->DC.CurrLineTextBaseOffset)
         pos.y += window->DC.CurrLineTextBaseOffset - style.FramePadding.y;
     ImVec2 size = CalcItemSize(size_arg, label_size.x + style.FramePadding.x * 2.0f, label_size.y + style.FramePadding.y * 2.0f);
 
@@ -705,12 +703,16 @@ bool ImGui::ButtonEx(const char* label, const ImVec2& size_arg, ImGuiButtonFlags
     const ImU32 col = ((held && hovered) ? gui.button_active.to_im_color() : hovered ? gui.button_hovered.to_im_color() : gui.button.to_im_color());
     RenderNavHighlight(bb, id);
     RenderFrame(bb.Min, bb.Max, col, 0, 4);
-    window->DrawList->AddRect(bb.Min, bb.Max, gui.border.to_im_color(), 4);
 
-    window->DrawList->AddText(bb.GetCenter() - label_size / 2, hovered ? gui.text.to_im_color() : gui.text_disabled.to_im_color(), label);
+    // Gray border color
+    const ImU32 border_col = IM_COL32(128, 128, 128, 255);  // Gray color
+    window->DrawList->AddRect(bb.Min, bb.Max, border_col, 4);
+
+    window->DrawList->AddText(bb.GetCenter() - label_size / 2, hovered ? gui.text.to_im_color() : gui.text.to_im_color(), label);
 
     return pressed;
 }
+
 
 bool ImGui::Button(const char* label, const ImVec2& size_arg)
 {
@@ -6394,11 +6396,9 @@ bool ImGui::Selectable(const char* label, bool selected, ImGuiSelectableFlags fl
     // Render
     if (held && (flags & ImGuiSelectableFlags_DrawHoveredWhenHeld))
         hovered = true;
-    if (hovered || selected)
-    {
-        const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
-        RenderFrame(bb.Min, bb.Max, col, false, 0.0f);
-    }
+    float value_second = selected ? 1.f : 0.f;
+
+    RenderFrame(bb.Min, bb.Max, gui.frame_active.to_im_color(10.0f * value_second), false, 10.0f);
     RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
 
     if (span_all_columns && window->DC.CurrentColumns)

@@ -1106,20 +1106,6 @@ void TextEditor::Render()
 				}
 			}
 		}
-		
-	}
-
-
-	ImGui::Dummy(ImVec2((longest + 2), mLines.size() * mCharAdvance.y));
-
-	if (mScrollToCursor)
-	{
-		EnsureCursorVisible();
-		ImGui::SetWindowFocus();
-		mScrollToCursor = false;
-	}
-
-	if (!mLines.empty()) {
 		std::string lln = GetCurrentLineText();
 
 		size_t pos = lln.find_last_of(' ');
@@ -1148,6 +1134,16 @@ void TextEditor::Render()
 				std::cout << "No matches found.\n";
 			}
 		}
+	}
+
+
+	ImGui::Dummy(ImVec2((longest + 2), mLines.size() * mCharAdvance.y));
+
+	if (mScrollToCursor)
+	{
+		EnsureCursorVisible();
+		ImGui::SetWindowFocus();
+		mScrollToCursor = false;
 	}
 }
 

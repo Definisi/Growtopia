@@ -199,6 +199,7 @@ public:
 	std::string GetText() const;
 
 	void SetTextLines(const std::vector<std::string>& aLines);
+	std::vector<std::string> AutoComplete(const std::string& input);
 	std::vector<std::string> GetTextLines() const;
 
 	std::string GetSelectedText() const;

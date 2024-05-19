@@ -1,5 +1,4 @@
 #pragma once
-#include <stdint.h>
 
 // clang-format off
 
@@ -20,7 +19,7 @@
 // clang-format on
 
 #ifdef __cplusplus
-extern "C++" {
+extern "C" {
 #endif
 
 typedef struct DiscordRichPresence {

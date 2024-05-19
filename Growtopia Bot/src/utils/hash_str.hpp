@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <wtypes.h>
 
 int16_t hash_str(std::string str)
 {

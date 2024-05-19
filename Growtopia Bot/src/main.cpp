@@ -10,7 +10,7 @@
 
 #include <utils/string_split.hpp>
 #include <d3dx9.h>
-
+ 
 #include <utils/imgui/bytes.hpp>
 #include <utils/imgui/blur.hpp>
 #include <utils/imgui/gui.hpp>
@@ -19,11 +19,20 @@
 #include <utils/discord.hpp>
 
 #include <utils/http_get.hpp>
+#include <utils/containsignorecase.hpp>
+
 
 
 std::string discord_uid = "";
 std::string discord_name = "User";
 bool success_get_avatar = false;
+
+static char bot_search_keyboard[50];
+static char world_input[50];
+static char growid_username_input[50];
+static char growid_password_input[50];
+static char socks5_input[50];
+
 
 #define ALPHA    ( ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_Float | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_PickerHueBar | ImGuiColorEditFlags_NoBorder )
 #define NO_ALPHA ( ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_Float | ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_PickerHueBar | ImGuiColorEditFlags_NoBorder )
@@ -71,6 +80,12 @@ int main() {
             D3DFMT_UNKNOWN, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &avatar);
 
         while (Gui::instance) {
+
+            for (auto client : client_pool->get_clients()) {
+                client->service_poll();
+            }
+
+
             if (!success_get_avatar && !discord_uid.empty()) {
                 std::string result = http_get("https://pfpfinder.com/api/discord/user/" + discord_uid);
                 if (!result.empty() && result.find("avatar") != std::string::npos) {
@@ -135,11 +150,11 @@ int main() {
                 if (gui.tab((const char*)ICON_FA_ROBOT, "BOT LIST", gui.m_tab == 1) && gui.m_tab != 1)
                     gui.m_tab = 1, gui.m_anim = 0.f;
 
-                if (gui.tab((const char*)ICON_FA_GEAR, "SETTINGS", gui.m_tab == 1) && gui.m_tab != 1)
-                    gui.m_tab = 3, gui.m_anim = 0.f;
+                if (gui.tab((const char*)ICON_FA_GEAR, "SETTINGS", gui.m_tab == 2) && gui.m_tab != 2)
+                    gui.m_tab = 2, gui.m_anim = 0.f;
 
-                if (gui.tab((const char*)ICON_FA_CODE, "EXECUTOR", gui.m_tab == 1) && gui.m_tab != 1)
-                    gui.m_tab = 4, gui.m_anim = 0.f;
+                if (gui.tab((const char*)ICON_FA_CODE, "EXECUTOR", gui.m_tab == 3) && gui.m_tab != 3)
+                    gui.m_tab = 3, gui.m_anim = 0.f;
 
 
                 EndChild();
@@ -151,19 +166,48 @@ int main() {
                 
                 ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
-                ImGui::SetCursorPos(ImVec2(300, 20));
-                ImGui::BeginChild("##subtabs", ImVec2(240, 25));
+                ImGui::SetCursorPos(ImVec2(190, 20));
+                ImGui::BeginChild("##subtabs", ImVec2(350, 25));
 
                 ImGui::GetWindowDrawList()->AddRectFilled(GetWindowPos(), GetWindowPos() + GetWindowSize(), gui.button.to_im_color(), 4);
                 ImGui::GetWindowDrawList()->AddRect(GetWindowPos(), GetWindowPos() + GetWindowSize(), gui.border.to_im_color(), 4);
 
-                for (int i = 0; i < gui.automation_subtabs.size(); ++i) {
-                    if (gui.subtab(gui.automation_subtabs.at(i), gui.m_automation_subtabs == i, gui.automation_subtabs.size(), i == 0 ? ImDrawFlags_RoundCornersLeft : i == gui.automation_subtabs.size() ? ImDrawFlags_RoundCornersRight : 0) && gui.m_automation_subtabs != i)
-                        gui.m_automation_subtabs = i, gui.m_anim = 0.f;
+                if (gui.m_tab == 0) {
+                    for (int i = 0; i < gui.automation_subtabs.size(); ++i) {
+                        if (gui.subtab(gui.automation_subtabs.at(i), gui.m_automation_subtabs == i, gui.automation_subtabs.size(), i == 0 ? ImDrawFlags_RoundCornersLeft : i == gui.automation_subtabs.size() ? ImDrawFlags_RoundCornersRight : 0) && gui.m_automation_subtabs != i)
+                            gui.m_automation_subtabs = i, gui.m_anim = 0.f;
 
-                    if (i != gui.automation_subtabs.size() - 1)
+                        if (i != gui.automation_subtabs.size() - 1)
+                            ImGui::SameLine();
+
+                    }
+                }
+
+                if (gui.m_tab == 1) {
+                    if (gui.account_tab) {
+                        if (gui.subtab("Go to status", true, 1, ImDrawFlags_RoundCornersLeft |ImDrawFlags_RoundCornersRight ))
+                            gui.account_tab = false, gui.m_anim = 0.f;
+                    }
+                    else {
+                        if (gui.subtab("Remove all bots", true, 3, ImDrawFlags_RoundCornersLeft)) {
+                            for (auto bot : client_pool->get_clients()) {
+                                client_pool->remove(bot->m_login_info.m_tank_id_name);
+                            }
+                        }
                         ImGui::SameLine();
 
+                        if (gui.subtab("Remove inactive bots", true, 3, 0)) {
+                            for (auto bot : client_pool->get_clients()){
+                                if (bot->get_peer()->state == ENET_PEER_STATE_DISCONNECTED) {
+                                    client_pool->remove(bot->m_login_info.m_tank_id_name);
+                                }
+                            }
+                        }
+                        ImGui::SameLine();
+
+                        if (gui.subtab("Go to account", true, 3, ImDrawFlags_RoundCornersRight))
+                            gui.account_tab = true, gui.m_anim = 0.f;
+                    }
                 }
 
                 ImGui::EndChild();
@@ -178,89 +222,322 @@ int main() {
 
                 switch (gui.m_tab) {
 
-                case 0:
-
-                    switch (gui.m_automation_subtabs) {
-
                     case 0:
+                        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Coming Soon!");
+                        /*
+                        switch (gui.m_automation_subtabs) {
 
-                        gui.group_box((const char*)ICON_FA_SQUARE "", ImVec2(GetWindowWidth() / (3 / 2) - GetStyle().ItemSpacing.x / (3/2), 400)); {
-                            
-                            
-                            auto clients = client_pool->get_clients();
-                            if (clients.empty()) {
-                                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Please select bot first");
-                            }
-                            else {
-                                static const int grid_size = 5;
-                                static const ImVec4 color_selected(1.0f, 0.0f, 0.0f, 1.0f);
-                                static const ImVec4 color_unselected(0.5f, 0.5f, 0.5f, 1.0f);
-                                static const ImVec2 button_size(50, 50);
-                                static const float spacing = 10.0f; // Jarak antara tombol-tombol
+                        case 0:
 
-                                // Memastikan bahwa auto_farm_tile dari semua bot yang dipilih adalah sama
-                                for (auto& bot : clients) {
-                                    bot->m_macro.auto_farm_tile = clients[0]->m_macro.auto_farm_tile;
+                            gui.group_box((const char*)ICON_FA_SQUARE " Auto Farm", ImVec2(360, 400)); {
+                            
+                                float posisi_y_awal = ImGui::GetCursorPosY();
+                            
+                                auto clients = client_pool->get_clients();
+                                bool selected = std::any_of(clients.begin(), clients.end(), [](const auto& client) { return client->selected; });
+                                std::shared_ptr<Client> selected_client = std::find_if(clients.begin(), clients.end(), [](const std::shared_ptr<Client>& _client) { return _client->selected; }) != clients.end() ? *std::find_if(clients.begin(), clients.end(), [](const std::shared_ptr<Client>& _client) { return _client->selected; }) : nullptr;
+                                if (!selected) {
+                                    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Please select bot first");
                                 }
+                                else {
+                                    static const int grid_size = 5;
+                                    static const ImVec4 color_selected(1.0f, 0.0f, 0.0f, 1.0f);
+                                    static const ImVec4 color_unselected = gui.button.to_vec4();
+                                    static const ImVec2 button_size(40, 40);
+                                    static const float spacing = 5.0f;
 
-                                for (int y = 0; y < grid_size; ++y) {
-                                    for (int x = -2; x <= 2; ++x) {
-                                        auto& auto_farm_tile = clients[0]->m_macro.auto_farm_tile; // Menggunakan auto_farm_tile dari bot pertama
-                                        std::pair<int, int> coordinate = std::make_pair(x, -y);
-                                        bool& tile_selected = auto_farm_tile[coordinate];
-                                        ImVec4 color = tile_selected ? color_selected : color_unselected;
+                                    for (auto& bot : clients) {
+                                        bot->m_macro.auto_farm_tile = selected_client->m_macro.auto_farm_tile;
+                                    }
+                                    for (int y = 2; y >= -2; --y) {
+                                        for (int x = -2; x <= 2; ++x) {
+                                            auto& auto_farm_tile = selected_client->m_macro.auto_farm_tile;
+                                            std::pair<int, int> coordinate = std::make_pair(x, -y);
+                                            bool& tile_selected = auto_farm_tile[coordinate];
+                                            ImVec4 color = tile_selected ? color_selected : color_unselected;
 
-                                        ImGui::PushID(y * grid_size + (x + 2));
-                                        ImGui::PushStyleColor(ImGuiCol_Button, color);
-                                        if (ImGui::Button(std::format("[{}, {}]", x, -y).c_str(), button_size)) {
-                                            for (auto& bot : clients) {
-                                                bot->m_macro.auto_farm_tile[coordinate] = !tile_selected;
+                                            ImGui::PushID(y * grid_size + (x + 2));
+                                            color_t color_backup = gui.button;
+                                            color_t color_backup2 = gui.button_hovered;
+                                            gui.button = {color.x, color.y, color.z, color.w};
+                                            gui.button_hovered = { color.x, color.y, color.z, color.w };
+                                            if (x == 0 && -y == 0) {
+                                                if (ImGui::Button((const char*)ICON_FA_SQUARE_ROOT, button_size)) {
+                                                    for (auto& bot : clients) {
+                                                        bot->m_macro.auto_farm_tile[coordinate] = !tile_selected;
+                                                    }
+                                                }
+                                            }else{
+                                                if (ImGui::Button(std::format("[{}, {}]", x, -y).c_str(), button_size)) {
+                                                    for (auto& bot : clients) {
+                                                        bot->m_macro.auto_farm_tile[coordinate] = !tile_selected;
+                                                    }
+                                                }
+                                            }
+                                        
+
+                                            ImGui::PopID();
+
+                                            gui.button = color_backup;
+                                            gui.button_hovered = color_backup2;
+
+                                            if (x < 2) {
+                                                ImGui::SameLine(0.0f, spacing);
                                             }
                                         }
-                                        ImGui::PopStyleColor();
-                                        ImGui::PopID();
+                                    }
 
-                                        if (x < 2) {
-                                            ImGui::SameLine(0.0f, spacing);
+
+                                    static bool show_punch = false;
+                                    static bool place = false;
+                                    static bool punch = false;
+                                    static int place_delay = 110;
+                                    static int punch_delay = 120;
+                                    static int block_id = 0;
+                                    ImGui::SetCursorPosY(270);
+                                    ImGui::InputInt("Punch Delay", &punch_delay);
+                                    ImGui::InputInt("Place Delay", &place_delay);
+                                    ImGui::InputInt("Block ID", &block_id);
+
+                                    ImGui::SetCursorPos({ 230,posisi_y_awal + 20 });
+                                    ImGui::BeginChild("##button_section_autofarm", ImVec2(105,150));
+                                    ImGui::Checkbox("Show Punch", &show_punch);
+                                    ImGui::Checkbox("Punch", &punch);
+                                    ImGui::Checkbox("Place", &place);
+
+                                    ImGui::Text("X: %d", (int)selected_client->m_player.m_pos.m_x / 32);
+                                    ImGui::Text("Y: %d", (int)selected_client->m_player.m_pos.m_y / 32);
+                                    ImGui::EndChild();
+                                }
+
+                        
+                        
+                            } gui.end_group_box();
+
+                            ImGui::SameLine();
+
+                            gui.group_box((const char*)ICON_FA_LIST " Bot", ImVec2(120, 400)); {
+                                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+                                ImGui::InputTextWithHint("##bot_search_keyword", "Search Bot", bot_search_keyboard, 50);
+
+                                if (ImGui::BeginListBox("##list_bot", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 50)))
+                                {
+                                    for (int i = 0; i < client_pool->get_clients().size(); i++)
+                                    {
+                                        auto client = client_pool->get_clients()[i];
+                                        if (!contains_ignore_case(client->m_login_info.m_tank_id_name, std::string(bot_search_keyboard)))
+                                            continue;
+                                        int maxIndexLength = 0;
+                                        int currentIndexLength = std::to_string(i).length();
+                                        if (currentIndexLength > maxIndexLength)
+                                        {
+                                            maxIndexLength = currentIndexLength;
+                                        }
+
+                                        if (ImGui::Selectable(client->m_login_info.m_tank_id_name.c_str(), client->selected))
+                                        {
+                                            if (client->selected)
+                                                client->selected = false;
+                                            else
+                                                client->selected = true;
                                         }
                                     }
+
+                                    ImGui::EndListBox();
                                 }
+
                             }
-
+                            gui.end_group_box();
                         
-                        
-                        } gui.end_group_box();
+                            break;
 
+                        case 1:
+                            ImGui::Text("Oke2");
+                            break;
+                        }
+                        */
                         break;
 
                     case 1:
-                        ImGui::Text("Oke2");
+
+
+                        if (gui.account_tab){
+
+
+                            gui.group_box((const char*)ICON_FA_LIST " Management", ImVec2(320, 400)); {
+                                auto clients = client_pool->get_clients();
+                                bool selected = std::any_of(clients.begin(), clients.end(), [](const auto& client) { return client->selected; });
+                                std::shared_ptr<Client> selected_client = std::find_if(clients.begin(), clients.end(), [](const std::shared_ptr<Client>& _client) { return _client->selected; }) != clients.end() ? *std::find_if(clients.begin(), clients.end(), [](const std::shared_ptr<Client>& _client) { return _client->selected; }) : nullptr;
+
+                                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+                                ImGui::InputTextWithHint("##bot_search_keyword", "Search Bot", bot_search_keyboard, 50);
+
+                                if (ImGui::BeginListBox("##list_bot", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 150)))
+                                {
+                                    for (int i = 0; i < client_pool->get_clients().size(); i++)
+                                    {
+                                        auto client = client_pool->get_clients()[i];
+                                        if (!contains_ignore_case(client->m_login_info.m_tank_id_name, std::string(bot_search_keyboard)))
+                                            continue;
+                                        int maxIndexLength = 0;
+                                        int currentIndexLength = std::to_string(i).length();
+                                        if (currentIndexLength > maxIndexLength)
+                                        {
+                                            maxIndexLength = currentIndexLength;
+                                        }
+
+                                        if (ImGui::Selectable(client->m_login_info.m_tank_id_name.c_str(), client->selected))
+                                        {
+                                            if (client->selected)
+                                                client->selected = false;
+                                            else
+                                                client->selected = true;
+                                        }
+                                    }
+
+                                    ImGui::EndListBox();
+                                }
+
+                                ImGui::Text("GrowID");
+
+                                ImGui::SameLine();
+
+                                ImGui::InputTextWithHint("##GrowIDUsername", "SpeedyBot", growid_username_input, 50);
+
+                                ImGui::Text("Password");
+
+                                ImGui::SameLine();
+
+                                ImGui::InputTextWithHint("##GrowIDPassword", "SpeedyBot", growid_password_input, 50);
+
+                                ImGui::Text("Socks5");
+
+                                ImGui::SameLine();
+
+                                ImGui::InputTextWithHint("##Socks5", "ip:port ip:port:username:password", socks5_input, 50);
+
+                                if (ImGui::Button("Add", ImVec2(ImGui::GetContentRegionAvail().x / 2, 50))) {
+                                    auto bot = client_pool->add(growid_username_input, growid_password_input);
+                                    if (!std::string(socks5_input).empty()) {
+                                        try {
+                                            auto row = split(socks5_input, ':');
+                                            bot->set_socks5_info(row[0], std::stoi(row[1]));
+                                            if (row.size() >= 4) {
+                                                bot->set_socks5_info(row[0], std::stoi(row[1]), row[2], row[3]);
+                                            }
+                                        }
+                                        catch (std::exception& e) {
+                                            // Nothing
+                                        }
+                                    }
+                                }
+                                ImGui::SameLine();
+
+                                if (ImGui::Button("Remove", ImVec2(ImGui::GetContentRegionAvail().x, 50))) {
+                                    if (selected) {
+                                        client_pool->remove(selected_client->m_login_info.m_tank_id_name);
+                                    }
+                                }
+
+                            } gui.end_group_box();
+
+                            ImGui::SameLine();
+
+                            gui.group_box((const char*)ICON_FA_INFO " Information", ImVec2(160, 400)); {
+                                auto clients = client_pool->get_clients();
+                                bool selected = std::any_of(clients.begin(), clients.end(), [](const auto& client) { return client->selected; });
+                                std::shared_ptr<Client> selected_client = std::find_if(clients.begin(), clients.end(), [](const std::shared_ptr<Client>& _client) { return _client->selected; }) != clients.end() ? *std::find_if(clients.begin(), clients.end(), [](const std::shared_ptr<Client>& _client) { return _client->selected; }) : nullptr;
+                                gui.group_box("#infony", ImVec2(135, 160)); {
+                                    if (!selected) {
+                                        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Please select bot first");
+                                    }
+                                    else {
+                                        ImGui::Text("World Name: %s", selected_client->m_world.m_name.c_str());
+                                        ImGui::Text("Status: %s", selected_client->get_status_string().c_str());
+                                        ImGui::Text("Position: %d, %d", (int)selected_client->m_player.m_pos.m_x / 32, (int)selected_client->m_player.m_pos.m_y / 32);
+                                        ImGui::Text("Level: %d", (int)selected_client->m_level);
+                                        ImGui::Text("Gems: %d", (int)selected_client->m_gem_count);
+                                        ImGui::Text("Backpack Size: %d", (int)selected_client->m_inventory.m_size);
+                                    }
+                                } gui.end_group_box();
+
+                                ImGui::InputTextWithHint("##World Name", "World Name", world_input, 50);
+                                ImGui::SameLine();
+                                if (ImGui::Button("Warp")) {
+                                    if (selected) {
+                                        selected_client->warp(world_input);
+                                    }
+                                }
+
+
+                                if (ImGui::Button("Connect", ImVec2(ImGui::GetContentRegionAvail().x / 2, 25))) {
+                                    if (selected) {
+                                        selected_client->connect();
+                                    }
+                                }
+                                ImGui::SameLine();
+                                if (ImGui::Button("Disconnect", ImVec2(ImGui::GetContentRegionAvail().x, 25))) {
+                                    if (selected) {
+                                        selected_client->disconnect();
+                                    }
+                                }
+
+                                if (selected) {
+                                    ImGui::Checkbox("Auto Reconnect", &selected_client->m_macro.auto_reconnect);
+                                }
+
+                            } gui.end_group_box();
+
+
+                        }
+                       
+
+                        else {
+                            gui.group_box("##BotList", ImVec2(ImGui::GetContentRegionAvail().x - 10, 400)); {
+
+                                if (ImGui::BeginTable("Bot List", 6))
+                                {
+                                    ImGui::TableSetupColumn("BOT NAME");
+                                    ImGui::TableSetupColumn("IP");
+                                    ImGui::TableSetupColumn("PING");
+                                    ImGui::TableSetupColumn("LEVEL");
+                                    ImGui::TableSetupColumn("STATUS");
+                                    ImGui::TableSetupColumn("WORLD");
+                                    ImGui::TableHeadersRow();
+
+                                    for (auto bot : client_pool->get_clients())
+                                    {
+                                        ImGui::TableNextRow();
+                                        ImGui::TableSetColumnIndex(0);
+                                        ImGui::Text("%s", bot->m_login_info.m_tank_id_name.c_str());
+                                        ImGui::TableSetColumnIndex(1);
+                                        ImGui::Text("%s", bot->socks5_ip.c_str());
+                                        ImGui::TableSetColumnIndex(2);
+                                        ImGui::Text("%d", (int)bot->get_ping());
+                                        ImGui::TableSetColumnIndex(3);
+                                        ImGui::Text("%d", (int)bot->m_level);
+                                        ImGui::TableSetColumnIndex(4);
+                                        ImGui::Text("%s", bot->get_status_string().c_str());
+                                        ImGui::TableSetColumnIndex(5);
+                                        ImGui::Text("%s", bot->m_world.m_name.c_str());
+                                    }
+
+                                    ImGui::EndTable();
+                                }
+
+                            }gui.end_group_box();
+                        }
                         break;
-                    }
 
-                    break;
+                    case 2:
 
-                case 1:
+                        break;
 
-                    gui.group_box((const char*)ICON_FA_BABY " Baby", ImVec2(GetWindowWidth() / 2 - GetStyle().ItemSpacing.x / 2, GetWindowHeight() / 2 - GetStyle().ItemSpacing.y / 2)); {
+                    case 3: 
 
-                    } gui.end_group_box();
+                        Gui::editor.Render("A Tittle");
 
-                    gui.group_box((const char*)ICON_FA_AD " Ad", ImVec2(GetWindowWidth() / 2 - GetStyle().ItemSpacing.x / 2, GetWindowHeight() / 2 - GetStyle().ItemSpacing.y / 2)); {
-
-                    } gui.end_group_box();
-
-                    SameLine(), SetCursorPosY(0);
-
-                    gui.group_box("Non icon name", ImVec2(GetWindowWidth() / 2 - GetStyle().ItemSpacing.x / 2, GetWindowHeight())); {
-
-                    } gui.end_group_box();
-
-                    break;
-
-                case 2:
-
-                    break;
+                        break;
                 }
 
                 ImGui::EndChild();

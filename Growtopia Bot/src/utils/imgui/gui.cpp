@@ -87,14 +87,22 @@ void c_gui::group_box( const char* name, ImVec2 size_arg ) {
 
     BeginChild( std::string( name ).append( ".main" ).c_str( ), size_arg, false, ImGuiWindowFlags_NoScrollbar );
 
-    GetWindowDrawList( )->AddRectFilled( ImVec2( pos.x + 0, pos.y + 20 ), ImVec2(pos.x + size_arg.x, pos.y + size_arg.y), gui.group_box_bg.to_im_color( ), 6 );
-    GetWindowDrawList( )->AddRect(ImVec2(pos.x + 0, pos.y + 20), ImVec2(pos.x + size_arg.x, pos.y + size_arg.y), gui.border.to_im_color( ), 6 );
+    float relative_size = 0;
+    if (name[0] != '#') {
+        relative_size = 20;
+    }
 
-    GetWindowDrawList( )->AddText(ImVec2(pos.x + 12, pos.y + 0), GetColorU32( ImGuiCol_Text, 0.5f ), name );
+    GetWindowDrawList( )->AddRectFilled( ImVec2( pos.x + 0, pos.y + relative_size), ImVec2(pos.x + size_arg.x, pos.y + size_arg.y), gui.group_box_bg.to_im_color( ), 6 );
+    GetWindowDrawList( )->AddRect(ImVec2(pos.x + 0, pos.y + relative_size), ImVec2(pos.x + size_arg.x, pos.y + size_arg.y), gui.border.to_im_color( ), 6 );
 
-    SetCursorPos( ImVec2( 12, 21 ) );
+    if (name[0] != '#') {
+        GetWindowDrawList()->AddText(ImVec2(pos.x + 12, pos.y + 0), GetColorU32(ImGuiCol_Text, 0.5f), name);
+    }
+
+    SetCursorPos(ImVec2(12, relative_size + 1));
+
     PushStyleVar( ImGuiStyleVar_WindowPadding, { 0, 10 } );
-    BeginChild( name, { size_arg.x - 24, size_arg.y - 21 }, 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysUseWindowPadding );
+    BeginChild( name, { size_arg.x - 24, size_arg.y - (relative_size + 1)}, 0, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysUseWindowPadding);
 
     BeginGroup( );
 

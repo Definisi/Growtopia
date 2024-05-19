@@ -78,6 +78,7 @@ public:
 	Macro m_macro;
 	SafeQueue<lua::events::EventContext> m_event_queue;
 
+	std::string socks5_ip = "0.0.0.0";
 	void set_socks5_info(const std::string& ip, const uint16_t port);
 	void set_socks5_info(const std::string& ip, const uint16_t port, const std::string& username, const std::string& password);
 

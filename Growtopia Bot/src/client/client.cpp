@@ -146,6 +146,8 @@ void Client::set_socks5_info(const std::string& ip, const uint16_t port) {
 	strcpy(const_cast<char*>(m_login_info.m_socks5_info.ip), ip.c_str());
 
 	m_login_info.m_socks5_info.port = port;
+
+	socks5_ip = ip;
 }
 
 void Client::set_socks5_info(const std::string& ip, const uint16_t port, const std::string& username, const std::string& password) {
@@ -173,6 +175,7 @@ void Client::set_socks5_info(const std::string& ip, const uint16_t port, const s
 	}
 	m_login_info.m_socks5_info.auth.password = new char[255];
 	strcpy(const_cast<char*>(m_login_info.m_socks5_info.auth.password), password.c_str());
+	socks5_ip = ip;
 }
 
 bool Client::connect(bool reset) {
@@ -586,11 +589,11 @@ void Client::service_poll() {
 	while (enet_host_service(m_host, &event, 0) > 0) {
 		switch (event.type) {
 		case ENET_EVENT_TYPE_CONNECT:
-			//std::cout << "ENET_EVENT_TYPE_CONNECT" << std::endl;
+			std::cout << "ENET_EVENT_TYPE_CONNECT" << std::endl;
 			status = BotStatus::CONNECTED;
 			break;
 		case ENET_EVENT_TYPE_DISCONNECT:
-			//std::cout << "ENET_EVENT_TYPE_DISCONNECT" << std::endl;
+			std::cout << "ENET_EVENT_TYPE_DISCONNECT" << std::endl;
 			status = BotStatus::DISCONNECTED;
 			std::thread([&]() {
 					while (!this->connect() && m_macro.auto_reconnect) {
@@ -601,7 +604,7 @@ void Client::service_poll() {
 				}).detach();
 			break;
 		case ENET_EVENT_TYPE_DISCONNECT_TIMEOUT: {
-			//std::cout << "ENET_EVENT_TYPE_DISCONNECT_TIMEOUT" << std::endl;
+		    std::cout << "ENET_EVENT_TYPE_DISCONNECT_TIMEOUT" << std::endl;
 
 			std::thread([&]() {
 					while (!this->connect() && m_macro.auto_reconnect) {
@@ -613,6 +616,7 @@ void Client::service_poll() {
 			break;
 		}
 		case ENET_EVENT_TYPE_RECEIVE: {
+			std::cout << "Recive packet " << std::endl;
 			switch (*((int32_t*)event.packet->data)) {
 			case NET_MESSAGE_SERVER_HELLO: {
 				this->login();
@@ -684,5 +688,13 @@ void Client::service_poll() {
 	if ((m_macro.smoke_last + 50) < time) {
 		smoke();
 		m_macro.auto_collect_last = time;
+	}
+
+	if ((m_macro.auto_farm_place || m_macro.auto_farm_punch)) {
+		int x = m_macro.auto_farm_index % 5;
+		int y = m_macro.auto_farm_index / 5;
+		if (m_macro.auto_farm_tile[std::make_pair(x, y)]) {
+
+		}
 	}
 }

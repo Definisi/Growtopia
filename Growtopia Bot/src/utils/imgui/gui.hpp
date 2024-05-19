@@ -23,6 +23,8 @@ public:
     int m_automation_subtabs = 0;
     vector < const char* > automation_subtabs = { "Farming", "Fishing", "Spaming", "Cooking" };
 
+    bool account_tab = true;
+
     color_t accent_color = { 0.3f, 0.49f, 1.f, 1.f };
 
     color_t text = { 1.f, 1.f, 1.f, 1.f };
@@ -34,7 +36,7 @@ public:
     color_t frame_active = { 0.043f, 0.07f, 0.137f, 1.f };
 
     color_t button = { 0.031f, 0.035f, 0.058f, 1.f };
-    color_t button_hovered = { 0.050f, 0.054f, 0.078f, 1.f };
+    color_t button_hovered = { 0.150f, 0.154f, 0.168f, 1.f };
     color_t button_active = { 0.07f, 0.074f, 0.098f, 1.f };
 
     color_t group_box_bg = { 0.019f, 0.035f, 0.062f, 1.f };
