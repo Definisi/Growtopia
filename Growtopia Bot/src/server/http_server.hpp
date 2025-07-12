@@ -1,4 +1,3 @@
-/*
 #pragma once
 #include <cpprest/http_listener.h>
 #include <cpprest/json.h>
@@ -15,6 +14,7 @@ private:
 	Concurrency::task<void> reply_bad_request(web::http::http_request request, const web::json::value& body);
 
 	void handle_post(web::http::http_request request);
+	void handle_get(web::http::http_request request);
 
 	Concurrency::task<void> on_add(web::http::http_request request, web::http::http_response response, web::json::value& json);
 	Concurrency::task<void> on_remove(web::http::http_request request, web::http::http_response response, web::json::value& json);
@@ -34,4 +34,4 @@ public:
 	}
 
 	void listen();
-};*/
+};

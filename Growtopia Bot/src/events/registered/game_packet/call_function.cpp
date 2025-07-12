@@ -41,36 +41,28 @@ namespace events {
 				std::lock_guard<std::mutex> lock(ctx.m_client->m_mutex);
 
 				uint16_t port = varlist[1].get<int32_t>();
+				ctx.m_client->m_login_info.m_port = port;
 
 				int32_t token = varlist[2].get<int32_t>();
+				ctx.m_client->m_login_info.m_token = token;
 
 				int32_t user = varlist[3].get<int32_t>();
+				ctx.m_client->m_login_info.m_user = user;
 
 				std::string data = varlist[4].get<std::string>();
 				size_t pos = data.find("|");
 
 				int32_t lmode = varlist[5].get<int32_t>();
+				ctx.m_client->m_login_info.m_lmode = lmode;
 
 				std::string address = data.substr(0, pos);
+				ctx.m_client->m_login_info.m_address = address;
 
 				std::string door_id = data.substr(pos + 1, data.find("|", pos + 1) - pos - 1);
+				ctx.m_client->m_login_info.m_door_id = door_id;
 
 				std::string uuid_token = data.substr(data.find("|", pos + 1) + 1);
-
-				ctx.m_client->m_login_info.m_port = port;
-				ctx.m_client->m_login_info.m_address = address;
-				ctx.m_client->m_login_info.m_lmode = lmode;
-				if (pos == 2) {
-					ctx.m_client->m_login_info.m_door_id = "0";
-				}
-				else {
-					ctx.m_client->m_login_info.m_door_id = door_id;
-				}
-				if (lmode == 1) {
-					ctx.m_client->m_login_info.m_user = user;
-					ctx.m_client->m_login_info.m_token = token;
-					ctx.m_client->m_login_info.m_uuid_token = uuid_token;
-				}
+				ctx.m_client->m_login_info.m_uuid_token = uuid_token;
 			}
 
 			GameUpdatePacket game_packet;

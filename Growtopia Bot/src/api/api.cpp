@@ -2,6 +2,9 @@
 
 #include <iostream>
 
+// Note: This Api class appears to be unused in the current codebase.
+// The HTTP API in src/server/http_server.cpp is used instead.
+
 Api::Api()
 	: m_state(luaL_newstate()) {
 	luaL_openlibs(m_state);
@@ -54,7 +57,9 @@ int Api::add_client(lua_State* state) {
 		lua_pop(state, 1);
 	}
 
-	std::shared_ptr<Client> client = client_pool->add(tank_id_name, tank_id_pass);
+	// std::shared_ptr<Client> client = client_pool->add(tank_id_name, tank_id_pass);
+	// Note: client_pool global variable has been removed. Use HttpServer's ClientPool instead.
+	std::shared_ptr<Client> client = nullptr; // Placeholder to prevent compilation errors
 
 	if (!client) {
 		lua_pushnil(state);

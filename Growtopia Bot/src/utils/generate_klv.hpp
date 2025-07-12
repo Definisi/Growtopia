@@ -5,9 +5,8 @@
 
 #include <utils/md5_sha256.hpp>
 
-std::string generate_klv(std::string game_version, std::uint32_t protocol, std::int32_t hash, const std::string& rid)
+std::string generate_klv(std::string game_version, std::uint32_t protocol, const std::string& rid)
 {
-    //std::cout << "Generate KLV :\n" << game_version << "\n" << protocol << "\n" << hash << "\n" << rid << std::endl;
     std::string game_version_formatted = game_version;
     std::array salts = {
         "e9fc40ec08f9ea6393f59c65e37f750aacddf68490c4f92d0d2523a5bc02ea63",

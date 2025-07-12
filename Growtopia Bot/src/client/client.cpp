@@ -409,6 +409,7 @@ void Client::login() {
 		}
 		text.add("wk", m_login_info.m_wk);
 		text.add("zf", std::to_string(m_login_info.m_zf));
+		text.add("aat", std::to_string(m_login_info.m_aat));
 
 		
 		//std::cout << " Packet : \n" << text.get_all();

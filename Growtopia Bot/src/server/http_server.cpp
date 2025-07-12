@@ -1,10 +1,11 @@
-/*#include <server/http_server.hpp>
+#include <server/http_server.hpp>
 
 #include <chrono>
 #include <thread>
 
 HttpServer::HttpServer(web::uri uri) : m_listener(uri) {
 	m_listener.support(web::http::methods::POST, std::bind(&HttpServer::handle_post, this, std::placeholders::_1));
+	m_listener.support(web::http::methods::GET, std::bind(&HttpServer::handle_get, this, std::placeholders::_1));
 
 	m_client_pool = std::make_shared<ClientPool>();
 }
@@ -72,6 +73,23 @@ void HttpServer::handle_post(web::http::http_request request) {
 			body[U("success")] = web::json::value::boolean(false);
 			return this->reply_bad_request(request, body);
 			});
+	}
+}
+
+void HttpServer::handle_get(web::http::http_request request) {
+	auto path = web::uri::decode(request.relative_uri().path());
+
+	if (path == U("/ok")) {
+		web::json::value body = web::json::value::object();
+		body[U("status")] = web::json::value::string(U("OK"));
+		body[U("message")] = web::json::value::string(U("Server is running"));
+		body[U("timestamp")] = web::json::value::number(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+		this->reply_ok(request, body);
+	}
+	else {
+		web::json::value body = web::json::value::object();
+		body[U("error")] = web::json::value::string(U("Endpoint not found"));
+		this->reply_bad_request(request, body);
 	}
 }
 
@@ -358,4 +376,4 @@ Concurrency::task<void> HttpServer::on_wrench(web::http::http_request request, w
 
 void HttpServer::listen() {
 	m_listener.open().wait();
-}*/
+}

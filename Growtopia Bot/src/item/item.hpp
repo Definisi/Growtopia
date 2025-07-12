@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <string>
+#include <vector>
 
 struct Item {
 	uint32_t m_id = 0;
@@ -69,6 +70,13 @@ struct Item {
 	uint32_t m_val5 = 0;
 
 	uint8_t m_body_parts[9] = { 0 };
+
+	// Version 17+ fields
+	uint32_t m_extra_flags1 = 0;
+	// Version 18+ fields
+	uint32_t m_extra_hash1 = 0;
+	// Version 21+ fields
+	uint16_t m_unknown_short1 = 0;
 
 	bool m_has_extra = false;
 

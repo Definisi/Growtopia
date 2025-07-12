@@ -22,7 +22,7 @@ public:
 
 	ENetSocks5Info m_socks5_info;
 
-	std::string m_game_version = "0";
+	std::string m_game_version = "5.23";
 
 	int32_t m_fhash{ -716928004 };
 	int32_t m_hash{ -964334282 };
@@ -51,8 +51,9 @@ public:
 	uint8_t m_device_version{ 0 };
 
 	uint16_t m_hash2{};
-	uint16_t m_protocol{ 0 };
-	uint16_t m_lmode{};
+	uint16_t m_protocol{ 216 };
+	uint16_t m_lmode{ 0 };
+	uint16_t m_aat{ 2 };
 	uint16_t m_cbits{ 1024 };
 
 	uint32_t m_total_playtime{};

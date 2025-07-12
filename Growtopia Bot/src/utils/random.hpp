@@ -1,10 +1,13 @@
 #include <random>
+#include <chrono>
+
 typedef std::mt19937 rng_type;
-rng_type rng;
+static rng_type rng;
+
 void seed_random()
 {
-    auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    rng.seed((uint32_t)seed);
+    auto seed = std::chrono::steady_clock::now().time_since_epoch().count();
+    rng.seed(static_cast<uint32_t>(seed));
 }
 
 int random(int min, int max) noexcept

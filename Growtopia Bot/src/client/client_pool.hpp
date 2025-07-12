@@ -20,4 +20,4 @@ public:
     std::vector<std::shared_ptr<Client>> get_clients();
 };
 
-extern ClientPool* client_pool;
+// extern ClientPool* client_pool; // Removed - now using HttpServer's m_client_pool instance

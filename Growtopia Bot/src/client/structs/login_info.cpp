@@ -13,23 +13,24 @@
 #include <utils/generate_mac.hpp>
 #include <utils/generate_klv.hpp>
 #include <utils/hash_str.hpp>
+#include <utils/generate_rid.hpp>
 
 LoginInfo::LoginInfo() {
 	m_lmode = 0;
 	m_user = 0;
 	m_token = 0;
 	m_door_id = "";
-	m_rid = generate_random_hex(32);
+	m_rid = generate_rid();
 	m_wk = generate_random_hex(32);
 	m_hash = hash_str(std::to_string(random(100000, 250000)) + "RT");
 	m_mac = generate_mac();
 	m_hash2 = hash_str(m_mac + "RT");
 
 
-	std::transform(m_rid.begin(), m_rid.end(), m_rid.begin(), ::toupper);
+	// m_rid is already uppercase from generate_rid()
 	std::transform(m_wk.begin(), m_wk.end(), m_wk.begin(), ::toupper);
 
-	m_klv = generate_klv(m_game_version, m_protocol, m_hash, m_rid);
+	m_klv = generate_klv(m_game_version, m_protocol, m_rid);
 }
 
 size_t LoginInfo::write_callback_impl(char* ptr, size_t size, size_t nmemb) {
@@ -148,7 +149,7 @@ bool LoginInfo::request_app_data()
 		m_game_version = version_str;
 		m_protocol = std::stoi(protocol_str);
 	}
-	m_klv = generate_klv(m_game_version, m_protocol, m_hash, m_rid);
+	m_klv = generate_klv(m_game_version, m_protocol, m_rid);
 	return true;
 }
 
@@ -161,15 +162,15 @@ void LoginInfo::reset() {
 	m_user = 0;
 	m_token = 0;
 	m_door_id = "";
-	m_rid = generate_random_hex(32);
+	m_rid = generate_rid();
 	m_wk = generate_random_hex(32);
 	m_hash = hash_str(std::to_string(random(100000, 250000)) + "RT");
 	m_mac = generate_mac();
 	m_hash2 = hash_str(m_mac + "RT");
 
 
-	std::transform(m_rid.begin(), m_rid.end(), m_rid.begin(), ::toupper);
+	// m_rid is already uppercase from generate_rid()
 	std::transform(m_wk.begin(), m_wk.end(), m_wk.begin(), ::toupper);
 
-	m_klv = generate_klv(m_game_version, m_protocol, m_hash, m_rid);
+	m_klv = generate_klv(m_game_version, m_protocol, m_rid);
 }

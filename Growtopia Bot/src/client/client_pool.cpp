@@ -15,7 +15,7 @@
 
 #include <events/registered/track_packet/event_name.hpp>
 
-ClientPool* client_pool = new ClientPool();
+// Global client_pool removed - now using HttpServer's m_client_pool instance
 
 std::shared_ptr<Client> ClientPool::add(const std::string& tank_id_name, const std::string& tank_id_pass) {
 	std::lock_guard<std::mutex> lock(m_mutex);

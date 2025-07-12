@@ -46,6 +46,7 @@ bool ItemDatabase::initialize(const std::string& path) {
 
 	BinaryReader reader(m_data, size);
 	m_version = reader.read<uint16_t>();
+	std::cout << "Version of items.dat" << (float)m_version << std::endl;
 	uint32_t amount = reader.read<uint32_t>();
 
 	for (size_t index = 0; index < amount; ++index) {
@@ -181,6 +182,25 @@ bool ItemDatabase::initialize(const std::string& path) {
 			reader.skip(length);
 		}
 
+		if (m_version >= 17) {
+			item.m_extra_flags1 = reader.read<int32_t>();
+		}
+		
+		if (m_version >= 18) {
+			item.m_extra_hash1 = reader.read<int32_t>();
+		}
+		
+		if (m_version >= 19) {
+			reader.skip(9); // unknownBytes2
+		}
+		
+		if (m_version >= 21) {
+			item.m_unknown_short1 = reader.read<int16_t>();
+		}
+		if (m_version >= 22) {
+			uint16_t length = reader.read<uint16_t>();
+			reader.skip(length);
+		}
 		if (index != item.m_id) {
 			std::cerr << "Items are unordered " << index << "/" << item.m_id << std::endl;
 			return false;
