@@ -8,9 +8,16 @@
 struct LoginInfo {
 private:
 	std::string m_server_data;
+	std::mutex m_callback_mutex; // Add mutex for thread safety
 
 	static size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdata) {
-		return static_cast<LoginInfo*>(userdata)->write_callback_impl(ptr, size, nmemb);
+		if (!userdata || !ptr) return 0;
+		try {
+			return static_cast<LoginInfo*>(userdata)->write_callback_impl(ptr, size, nmemb);
+		}
+		catch (...) {
+			return 0; // Return 0 to indicate error
+		}
 	}
 	size_t write_callback_impl(char* ptr, size_t size, size_t nmemb);
 public:
@@ -44,6 +51,8 @@ public:
 	std::string m_wk{ "NONE0" };
 	std::string m_uuid_token{};
 	std::string m_door_id{};
+	std::string m_login_form{}; // For Get ltoken
+	std::string m_ltoken{};
 
 	uint8_t m_f{ 1 };
 	uint8_t m_player_age{ 18 };

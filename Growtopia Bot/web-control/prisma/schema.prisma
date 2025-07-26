@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      UserRole @default(FREEMIUM)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  nodes     Node[]
+  
+  @@map("users")
+}
+
+model Node {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  apiUrl    String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  ownerId   String   @db.ObjectId
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  bots      Bot[]
+  
+  @@map("nodes")
+}
+
+model Bot {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  clientId  String    @unique
+  name      String
+  username  String
+  world     String?
+  status    BotStatus @default(OFFLINE)
+  position  Json?
+  inventory Json?
+  lastSeen  DateTime  @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  nodeId    String    @db.ObjectId
+  node      Node      @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  
+  @@map("bots")
+}
+
+enum UserRole {
+  ADMIN
+  PREMIUM
+  FREEMIUM
+}
+
+enum BotStatus {
+  ONLINE
+  OFFLINE
+  CONNECTING
+  ERROR
+}

@@ -1,5 +1,6 @@
 #include "blur.hpp"
 
+#ifdef _WIN32
 #include "blur_x.hpp"
 #include "blur_y.hpp"
 
@@ -100,3 +101,5 @@ inline void draw_blur( ImDrawList* drawList ) {
     drawList->AddCallback( end_blur, blur::device );
     drawList->AddImageRounded( blurTexture, { 0.0f, 0.0f }, { backbufferWidth * 1.0f, backbufferHeight * 1.0f }, { 0.0f, 0.0f }, { 1.0f, 1.0f }, IM_COL32( 255, 255, 255, 255 ), 7.f );
 }
+
+#endif // _WIN32

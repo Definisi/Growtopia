@@ -40,10 +40,23 @@ public:
 		: m_data(parse(string)) {}
 	~TextScanner() = default;
 
-	template<typename... Args>
-	void add(const std::string& label, Args... values) {
-		m_data.emplace_back(label, std::vector<std::string>{values...});
-	}
+    template<typename... Args>
+    void add(const std::string& label, Args... values) {
+        m_data.emplace_back(label, std::vector<std::string>{values...});
+    }
+
+    bool remove(const std::string& label) {
+        auto it = std::find_if(m_data.begin(), m_data.end(), 
+            [&](const std::pair<std::string, std::vector<std::string>>& pair) {
+                return pair.first == label;
+            });
+
+        if (it != m_data.end()) {
+            m_data.erase(it);
+            return true;
+        }
+        return false;
+    }
 
 	void for_each(std::function<void(const std::string&, const std::vector<std::string>&)> callback) {
 		for (auto pair : m_data) {

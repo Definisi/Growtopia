@@ -10,10 +10,13 @@
 #include <cctype>
 #include <ctime>
 #include <cstdlib>
-#include <proton/CRandom.h>
+#include "random.hpp"
+// #include <proton/CRandom.h> // Removed - using standard C++ random
+
+using namespace GrowtopiaBot::Utils;
 
 
-inline int random(int range) {
+inline int random_range(int range) {
     if (range == 0) {
         return 0;
     }
@@ -46,16 +49,29 @@ inline void dec_to_hex_string(uint32_t value, uint8_t* pOut, int16_t charArrayMa
 }
     
 
-inline std::string generate_rid() {
+inline std::string generate_rid(int custom_year = 0, int custom_month = 0, int custom_day = 0, 
+                              int custom_hour = 0, int custom_min = 0, int custom_sec = 0) {
     int nowyear, nowmonth, nowday, nowhour, nowmin, nowsec;
-    get_date_and_time(&nowmonth, &nowday, &nowyear, &nowhour, &nowmin, &nowsec);
+    
+    if (custom_year == 0) {
+        get_date_and_time(&nowmonth, &nowday, &nowyear, &nowhour, &nowmin, &nowsec);
+    } else {
+        nowyear = custom_year;
+        nowmonth = custom_month;
+        nowday = custom_day;
+        nowhour = custom_hour;
+        nowmin = custom_min;
+        nowsec = custom_sec;
+    }
+
     uint32_t rid[4] = { 0, 0, 0, 0 };
-    CRandom r;
+    std::mt19937 r;
     rid[0] = ((nowmonth + ((nowyear - 2014) * 12)) * (259200)) + (nowday * 86400) + (nowhour * 3600) + nowsec;
-    rid[1] = (uint32_t)random(RT_RAND_MAX) * (uint32_t)random(RT_RAND_MAX) + (uint32_t)random(RT_RAND_MAX);
-    r.SetRandomSeed(rid[0] + random(RT_RAND_MAX) + nowyear);
-    rid[2] = r.Random(200000000);
-    rid[3] = (uint32_t)random(RT_RAND_MAX) * (uint32_t)random(RT_RAND_MAX) + (uint32_t)random(RT_RAND_MAX);
+    rid[1] = (uint32_t)random_range(RAND_MAX) * (uint32_t)random_range(RAND_MAX) + (uint32_t)random_range(RAND_MAX);
+    r.seed(rid[0] + random_range(RAND_MAX) + nowyear);
+    std::uniform_int_distribution<uint32_t> dist(0, 200000000);
+    rid[2] = dist(r);
+    rid[3] = (uint32_t)random_range(RAND_MAX) * (uint32_t)random_range(RAND_MAX) + (uint32_t)random_range(RAND_MAX);
     uint8_t* rid_data = reinterpret_cast<uint8_t*>(&rid);
     char temp[32];
     std::string final;

@@ -1,0 +1,150 @@
+{
+  "api_examples": {
+    "base_url": "http://localhost:8080/api",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "endpoints": {
+      "bot_management": {
+        "add_bot": {
+          "option": "add",
+          "tank_id_name": "your_bot_name",
+          "tank_id_pass": "your_password",
+          "server": "growtopia1.com",
+          "port": 17091
+        },
+        "remove_bot": {
+          "option": "remove",
+          "tank_id_name": "your_bot_name"
+        },
+        "list_clients": {
+          "option": "list_clients"
+        },
+        "disconnect_bot": {
+          "option": "disconnect",
+          "tank_id_name": "your_bot_name"
+        },
+        "reconnect_bot": {
+          "option": "reconnect",
+          "tank_id_name": "your_bot_name"
+        }
+      },
+      "movement": {
+        "move": {
+          "option": "move",
+          "tank_id_name": "your_bot_name",
+          "x": 100,
+          "y": 200
+        },
+        "teleport": {
+          "option": "teleport",
+          "tank_id_name": "your_bot_name",
+          "x": 150,
+          "y": 250
+        },
+        "warp": {
+          "option": "warp",
+          "tank_id_name": "your_bot_name",
+          "world": "START"
+        }
+      },
+      "block_interaction": {
+        "place_block": {
+          "option": "place",
+          "tank_id_name": "your_bot_name",
+          "item_id": 2,
+          "x": 100,
+          "y": 200
+        },
+        "punch_block": {
+          "option": "punch",
+          "tank_id_name": "your_bot_name",
+          "x": 100,
+          "y": 200
+        },
+        "wrench_block": {
+          "option": "wrench",
+          "tank_id_name": "your_bot_name",
+          "x": 100,
+          "y": 200
+        }
+      },
+      "item_management": {
+        "consume_item": {
+          "option": "consume",
+          "tank_id_name": "your_bot_name",
+          "item_id": 123
+        },
+        "wear_item": {
+          "option": "wear",
+          "tank_id_name": "your_bot_name",
+          "item_id": 456
+        },
+        "collect_items": {
+          "option": "collect",
+          "tank_id_name": "your_bot_name",
+          "range": 3,
+          "force": false
+        },
+        "get_inventory": {
+          "option": "inventory",
+          "tank_id_name": "your_bot_name"
+        }
+      },
+      "communication": {
+        "send_message": {
+          "option": "send",
+          "tank_id_name": "your_bot_name",
+          "message": "Hello World!"
+        },
+        "smoke": {
+          "option": "smoke",
+          "tank_id_name": "your_bot_name"
+        }
+      },
+      "information": {
+        "get_client_info": {
+          "option": "client",
+          "tank_id_name": "your_bot_name"
+        },
+        "get_status": {
+          "option": "status",
+          "tank_id_name": "your_bot_name"
+        },
+        "get_ping": {
+          "option": "ping",
+          "tank_id_name": "your_bot_name"
+        },
+        "get_world_info": {
+          "option": "world_info",
+          "tank_id_name": "your_bot_name"
+        },
+        "get_player_info": {
+          "option": "player_info",
+          "tank_id_name": "your_bot_name"
+        }
+      },
+      "utility": {
+        "reset_bot": {
+          "option": "reset",
+          "tank_id_name": "your_bot_name"
+        }
+      }
+    }
+  },
+  "common_item_ids": {
+    "dirt": 2,
+    "rock": 4,
+    "wood_block": 6,
+    "glass": 8,
+    "door": 32,
+    "world_lock": 242,
+    "diamond_lock": 1796,
+    "small_lock": 202
+  },
+  "common_servers": [
+    "growtopia1.com",
+    "growtopia2.com"
+  ],
+  "default_port": 17091
+}

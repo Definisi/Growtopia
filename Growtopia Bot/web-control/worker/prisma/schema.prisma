@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  username  String   @unique
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Node {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique
+  host      String
+  port      Int
+  status    String   @default("offline")
+  lastSeen  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  bots      Bot[]
+}
+
+model Bot {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String?
+  username  String
+  password  String
+  status    String   @default("offline")
+  nodeId    String   @db.ObjectId
+  node      Node     @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  lastSeen  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([username, nodeId])
+}

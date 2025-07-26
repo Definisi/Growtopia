@@ -1,0 +1,191 @@
+---
+# Clang-Format configuration for Growtopia Bot
+# Based on Google style with some modifications
+
+BasedOnStyle: Google
+
+# Basic formatting
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+
+# Language specific
+Language: Cpp
+Standard: c++17
+
+# Indentation
+IndentCaseLabels: true
+IndentPPDirectives: BeforeHash
+IndentWrappedFunctionNames: false
+NamespaceIndentation: All
+
+# Alignment
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: Left
+AlignOperands: true
+AlignTrailingComments: true
+
+# Allow
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
+# Break
+BreakBeforeBraces: Attach
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeColon
+BreakAfterJavaFieldAnnotations: false
+BreakStringLiterals: true
+
+# Bin pack
+BinPackArguments: false
+BinPackParameters: false
+
+# Constructors
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 4
+
+# Derive
+DerivePointerAlignment: false
+
+# Experimental
+ExperimentalAutoDetectBinPacking: false
+
+# Fix
+FixNamespaceComments: true
+
+# For each
+ForEachMacros:
+  - foreach
+  - Q_FOREACH
+  - BOOST_FOREACH
+
+# Include
+IncludeBlocks: Preserve
+SortIncludes: true
+
+# Indent
+IndentCaseLabels: true
+IndentGotoLabels: true
+IndentPPDirectives: None
+IndentWidth: 4
+IndentWrappedFunctionNames: false
+
+# Keep
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# Macro
+MacroBlockBegin: ''
+MacroBlockEnd: ''
+
+# Max
+MaxEmptyLinesToKeep: 1
+
+# Namespace
+NamespaceIndentation: All
+
+# Penalty
+PenaltyBreakAssignment: 2
+PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyBreakTemplateDeclaration: 10
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 200
+
+# Pointer
+PointerAlignment: Left
+
+# Raw
+RawStringFormats:
+  - Language: Cpp
+    Delimiters:
+      - cc
+      - CC
+      - cpp
+      - Cpp
+      - CPP
+      - 'c++'
+      - 'C++'
+    CanonicalDelimiter: ''
+    BasedOnStyle: google
+
+# Reflow
+ReflowComments: true
+
+# Sort
+SortIncludes: true
+SortUsingDeclarations: true
+
+# Space
+SpaceAfterCStyleCast: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles: false
+SpacesInContainerLiterals: true
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Tab
+TabWidth: 4
+UseTab: Never
+
+# Comments
+CommentPragmas: '^ IWYU pragma:'
+
+# Disable formatting for specific sections
+DisableFormat: false
+
+# Include categories
+IncludeCategories:
+  - Regex: '^<ext/.*\.h>'
+    Priority: 2
+  - Regex: '^<.*\.h>'
+    Priority: 1
+  - Regex: '^<.*>'
+    Priority: 2
+  - Regex: '.*'
+    Priority: 3
+
+# Java specific (not used but kept for completeness)
+JavaScriptQuotes: Leave
+JavaScriptWrapImports: true
+
+# Objective-C specific (not used but kept for completeness)
+ObjCBinPackProtocolList: Never
+ObjCBlockIndentWidth: 2
+ObjCSpaceAfterProperty: false
+ObjCSpaceBeforeProtocolList: true
+
+# Cpp11BracedListStyle
+Cpp11BracedListStyle: true
+
+# SpaceAfterLogicalNot
+SpaceAfterLogicalNot: false
+
+# CompactNamespaces
+CompactNamespaces: false
+
+# FixNamespaceComments
+FixNamespaceComments: true
+
+# SortUsingDeclarations
+SortUsingDeclarations: true
+
+# IncludeBlocks
+IncludeBlocks: Regroup

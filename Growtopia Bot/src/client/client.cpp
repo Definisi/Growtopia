@@ -11,6 +11,7 @@
 #include <utils/binary_writer.hpp>
 #include <utils/pathfinder.hpp>
 #include <utils/get_current_time.hpp>
+#include <utils/growtopia_auth.hpp>
 
 Client::Client() : m_host(nullptr), m_peer(nullptr) {
 	m_lua_state = luaL_newstate();
@@ -135,6 +136,7 @@ std::string Client::get_status_string() {
 	}
 }
 
+
 void Client::set_socks5_info(const std::string& ip, const uint16_t port) {
 	std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -214,31 +216,94 @@ bool Client::connect(bool reset) {
 
 	if (m_login_info.m_address == "" || m_login_info.m_port == 0) {
 		std::cout << "Getting server address..." << std::endl;
-		if (!m_login_info.request_server_data()) {
+		
+		try {
+			if (!m_login_info.request_server_data()) {
+				std::cout << "Failed to get server data" << std::endl;
+				status = BotStatus::FORBIDDEN;
+				return false;
+			}
+			
+			if (!m_login_info.request_app_data()) {
+				std::cout << "Failed to get app data" << std::endl;
+				status = BotStatus::FORBIDDEN1;
+				return false;
+			}
+
+			if (m_login_info.m_ltoken.empty()) {
+				for (int i = 0; i < 5; i++) {
+					// Use the new growtopia_auth.hpp function with LoginInfo
+					LoginStatus status = growidLoginWithLoginInfo(m_login_info, m_login_info.m_tank_id_name, m_login_info.m_tank_id_pass, m_login_info.m_ltoken);
+					if (status == LoginStatus::Success && !m_login_info.m_ltoken.empty()) {
+						std::cout << "Successfully obtained login token: " << m_login_info.m_ltoken << std::endl;
+						break;
+					}
+					if (i == 4) {
+						std::cout << "Failed to obtain login token after 5 attempts" << std::endl;
+						return false;
+					}
+					std::cout << "Login attempt " << (i + 1) << " failed, retrying..." << std::endl;
+				}
+			}
+			std::cout << "Login token: " << m_login_info.m_ltoken << std::endl;
+
+
+			
+			// Validate that we actually got valid data
+			if (m_login_info.m_address.empty() || m_login_info.m_port == 0) {
+				std::cout << "Invalid server address or port received" << std::endl;
+				status = BotStatus::FORBIDDEN;
+				return false;
+			}
+			
+			std::cout << "Located server: " << m_login_info.m_address << ":" << m_login_info.m_port << ", connecting..." << std::endl;
+		}
+		catch (const std::exception& e) {
+			std::cout << "Exception while getting server address: " << e.what() << std::endl;
 			status = BotStatus::FORBIDDEN;
 			return false;
 		}
-		if (!m_login_info.request_app_data()) {
-			status = BotStatus::FORBIDDEN1;
+		catch (...) {
+			std::cout << "Unknown exception while getting server address" << std::endl;
+			status = BotStatus::FORBIDDEN;
 			return false;
 		}
-		std::cout << "Located server, connecting..." << std::endl;
 	}
 
-	ENetAddress address;
-	enet_address_set_host_ip(&address, m_login_info.m_address.c_str());
-	address.port = m_login_info.m_port;
+	try {
+		ENetAddress address;
+		if (enet_address_set_host_ip(&address, m_login_info.m_address.c_str()) < 0) {
+			std::cout << "Failed to set host IP: " << m_login_info.m_address << std::endl;
+			status = BotStatus::FORBIDDEN;
+			return false;
+		}
+		
+		address.port = m_login_info.m_port;
 
-	m_peer = enet_host_connect(m_host, &address, 2, 0);
+		m_peer = enet_host_connect(m_host, &address, 2, 0);
 
-	m_login_info.m_address = "";
-	m_login_info.m_port = 0;
+		m_login_info.m_address = "";
+		m_login_info.m_port = 0;
 
-	if (!m_peer)
+		if (!m_peer) {
+			std::cout << "Failed to create ENet peer connection" << std::endl;
+			status = BotStatus::FORBIDDEN;
+			return false;
+		}
+
+		enet_host_flush(m_host);
+		return true;
+	}
+	catch (const std::exception& e) {
+		std::cout << "Exception during ENet connection: " << e.what() << std::endl;
+		status = BotStatus::FORBIDDEN;
 		return false;
-
-	enet_host_flush(m_host);
-	return true;
+	}
+	catch (...) {
+		std::cout << "Unknown exception during ENet connection" << std::endl;
+		status = BotStatus::FORBIDDEN;
+		return false;
+	}
 }
 
 void Client::disconnect() {
@@ -369,54 +434,84 @@ bool Client::move_toward(uint32_t x, uint32_t y, uint32_t delay) {
 	return true;
 }
 
-void Client::login() {
+void Client::login(bool http) {
 	TextScanner text;
-
 	{
-		std::lock_guard<std::mutex> lock(m_mutex);
-
-		text.add("tankIDName", m_login_info.m_tank_id_name);
-		text.add("tankIDPass", m_login_info.m_tank_id_pass);
-		text.add("requestedName", m_login_info.m_requested_name);
-		text.add("f", std::to_string(m_login_info.m_f));
-		text.add("protocol", std::to_string(m_login_info.m_protocol));
-		text.add("game_version", m_login_info.m_game_version);
-		text.add("fz", std::to_string(m_login_info.m_fz));
-		text.add("lmode", std::to_string(m_login_info.m_lmode));
-		text.add("cbits", std::to_string(m_login_info.m_cbits));
-		text.add("player_age", std::to_string(m_login_info.m_player_age));
-		text.add("GDPR", std::to_string(m_login_info.m_gdpr));
-		text.add("category", m_login_info.m_category);
-		text.add("totalPlaytime", std::to_string(m_login_info.m_total_playtime));
-		text.add("klv", m_login_info.m_klv);
-		text.add("hash2", std::to_string(m_login_info.m_hash2));
-		text.add("meta", m_login_info.m_meta);
-		text.add("fhash", std::to_string(m_login_info.m_fhash));
-		text.add("rid", m_login_info.m_rid);
-		text.add("platformID", m_login_info.m_platform_id);
-		text.add("deviceVersion", std::to_string(m_login_info.m_device_version));
-		text.add("country", m_login_info.m_country);
-		text.add("hash", std::to_string(m_login_info.m_hash));
-		text.add("mac", m_login_info.m_mac);
-
-		if (m_login_info.m_uuid_token.length() > 3 || m_login_info.m_lmode != 0) {
-			text.add("user", std::to_string(m_login_info.m_user));
-			text.add("token", std::to_string(m_login_info.m_token));
-			if (m_login_info.m_lmode == 3 || m_login_info.m_lmode == 2){
-				text.add("doorID", m_login_info.m_door_id);
-			}
-			text.add("UUIDToken", m_login_info.m_uuid_token);
+		if (!http){
+			std::lock_guard<std::mutex> lock(m_mutex);
 		}
-		text.add("wk", m_login_info.m_wk);
-		text.add("zf", std::to_string(m_login_info.m_zf));
-		text.add("aat", std::to_string(m_login_info.m_aat));
+		if (!http){
+			text.add("tankIDName", m_login_info.m_tank_id_name);
+			text.add("tankIDPass", m_login_info.m_tank_id_pass);
+			text.add("requestedName", m_login_info.m_requested_name);
+			text.add("f", std::to_string(m_login_info.m_f));
+			text.add("protocol", std::to_string(m_login_info.m_protocol));
+			text.add("game_version", m_login_info.m_game_version);
+			text.add("fz", std::to_string(m_login_info.m_fz));
+			text.add("lmode", std::to_string(m_login_info.m_lmode));
+			text.add("cbits", std::to_string(m_login_info.m_cbits));
+			text.add("player_age", std::to_string(25));//, std::to_string(m_login_info.m_player_age));
+			text.add("GDPR", std::to_string(m_login_info.m_gdpr));
+			text.add("category", m_login_info.m_category);
+			text.add("totalPlaytime", std::to_string(m_login_info.m_total_playtime));
+			text.add("klv", m_login_info.m_klv);
+			text.add("hash2", std::to_string(m_login_info.m_hash2));
+			text.add("meta", m_login_info.m_meta);
+			text.add("fhash", std::to_string(m_login_info.m_fhash));
+			text.add("rid", m_login_info.m_rid);
+			text.add("platformID", m_login_info.m_platform_id);
+			text.add("deviceVersion", std::to_string(m_login_info.m_device_version));
+			text.add("country", m_login_info.m_country);
+			text.add("hash", std::to_string(m_login_info.m_hash));
+			text.add("mac", m_login_info.m_mac);
+			text.add("ltoken", m_login_info.m_ltoken);
 
-		
+			if (m_login_info.m_uuid_token.length() > 3 || m_login_info.m_lmode != 0) {
+				text.add("user", std::to_string(m_login_info.m_user));
+				text.add("token", std::to_string(m_login_info.m_token));
+				if (m_login_info.m_lmode == 3 || m_login_info.m_lmode == 2){
+					text.add("doorID", m_login_info.m_door_id);
+				}
+				text.add("UUIDToken", m_login_info.m_uuid_token);
+			}
+			text.add("wk", m_login_info.m_wk);
+			text.add("zf", std::to_string(m_login_info.m_zf));
+			text.add("aat", std::to_string(m_login_info.m_aat));
+		}else {
+			text.add("tankIDName", "");
+			text.add("tankIDPass", "");
+			text.add("requestedName", "");
+			text.add("f", std::to_string(m_login_info.m_f));
+			text.add("protocol", std::to_string(m_login_info.m_protocol));
+			text.add("game_version", m_login_info.m_game_version);
+			text.add("fz", std::to_string(m_login_info.m_fz));
+			text.add("cbits", std::to_string(m_login_info.m_cbits));
+			text.add("player_age", std::to_string(25));//std::to_string(m_login_info.m_player_age)); // Issue with US IP
+			text.add("GDPR", std::to_string(m_login_info.m_gdpr));
+			text.add("category", m_login_info.m_category);
+			text.add("totalPlaytime", std::to_string(m_login_info.m_total_playtime));
+			text.add("klv", m_login_info.m_klv);
+			text.add("hash2", std::to_string(m_login_info.m_hash2));
+			text.add("meta", m_login_info.m_meta);
+			text.add("fhash", std::to_string(m_login_info.m_fhash));
+			text.add("rid", m_login_info.m_rid);
+			text.add("platformID", m_login_info.m_platform_id);
+			text.add("deviceVersion", std::to_string(m_login_info.m_device_version));
+			text.add("country", m_login_info.m_country);
+			text.add("hash", std::to_string(m_login_info.m_hash));
+			text.add("mac", m_login_info.m_mac);
+			text.add("wk", m_login_info.m_wk);
+			text.add("zf", std::to_string(m_login_info.m_zf));
+		}
 		//std::cout << " Packet : \n" << text.get_all();
 		//std::cout << std::format("Logging on {}...", m_login_info.m_tank_id_name) << std::endl;
 	}
 
-	this->send_packet(NET_MESSAGE_GENERIC_TEXT, text.get_all());
+	if (!http){
+		this->send_packet(NET_MESSAGE_GENERIC_TEXT, text.get_all());
+	}else{
+		m_login_info.m_login_form = text.get_all();
+	}
 }
 
 bool Client::consume(const uint32_t& id) {
@@ -586,8 +681,8 @@ void Client::service_poll() {
 		return;
 
 	ENetEvent event;
-
 	while (enet_host_service(m_host, &event, 0) > 0) {
+		std::cout << (int)event.type << std::endl;
 		switch (event.type) {
 		case ENET_EVENT_TYPE_CONNECT:
 			std::cout << "ENET_EVENT_TYPE_CONNECT" << std::endl;
@@ -617,13 +712,15 @@ void Client::service_poll() {
 			break;
 		}
 		case ENET_EVENT_TYPE_RECEIVE: {
-			std::cout << "Recive packet " << std::endl;
+		    std::cout << "ENET_EVENT_TYPE_RECEIVE: ";
 			switch (*((int32_t*)event.packet->data)) {
 			case NET_MESSAGE_SERVER_HELLO: {
+				std::cout << "NET_MESSAGE_SERVER_HELLO" << std::endl;
 				this->login();
 				break;
 			}
 			case NET_MESSAGE_GAME_PACKET: {
+				std::cout << "NET_MESSAGE_GAME_PACKET" << std::endl;
 				if (event.packet->dataLength < sizeof(GameUpdatePacket))
 					return;
 
@@ -646,9 +743,11 @@ void Client::service_poll() {
 				break;
 			}
 			case NET_MESSAGE_ERROR: {
+				std::cout << "NET_MESSAGE_ERROR" << std::endl;
 				break;
 			}
 			case NET_MESSAGE_TRACK: {
+				std::cout << "NET_MESSAGE_TRACK" << std::endl;
 				TextScanner text = TextScanner(reinterpret_cast<char*>(event.packet->data + 4));
 
 				EventContext ctx{
@@ -664,12 +763,17 @@ void Client::service_poll() {
 				break;
 			}
 			case NET_MESSAGE_GENERIC_TEXT: {
+				std::cout << "NET_MESSAGE_GENERIC_TEXT" << std::endl;
 				break;
 			}
 			case NET_MESSAGE_GAME_MESSAGE: {
+				std::cout << "NET_MESSAGE_GAME_MESSAGE" << std::endl;
+				TextScanner text = TextScanner(reinterpret_cast<char*>(event.packet->data + 4));
+				std::cout << text.get_all() << std::endl;
 				break;
 			}
 			default:
+				std::cout << "Unknown message type" << std::endl;
 				break;
 			}
 

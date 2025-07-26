@@ -85,7 +85,6 @@ public:
 	bool connect(bool reset = false);
 
 
-
 	void reset();
 	void disconnect();
 	void send_packet(const int32_t& type, const std::string& text);
@@ -93,7 +92,7 @@ public:
 
 	bool teleport(uint32_t x, uint32_t y);
 	bool move_toward(uint32_t x, uint32_t y, uint32_t delay = 200);
-	void login();
+	void login(bool http = false);
 	bool consume(const uint32_t& id);
 	bool wear(const uint32_t& id);
 	bool place(const uint32_t& x, const uint32_t& y, const uint32_t& id);

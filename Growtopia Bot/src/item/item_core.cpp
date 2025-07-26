@@ -46,7 +46,6 @@ bool ItemDatabase::initialize(const std::string& path) {
 
 	BinaryReader reader(m_data, size);
 	m_version = reader.read<uint16_t>();
-	std::cout << "Version of items.dat" << (float)m_version << std::endl;
 	uint32_t amount = reader.read<uint32_t>();
 
 	for (size_t index = 0; index < amount; ++index) {

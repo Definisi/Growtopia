@@ -3242,7 +3242,7 @@ extern "C" {
 
 			newHeader->integrity[0] = ENET_HOST_TO_NET_16(rand1);
 			newHeader->integrity[1] = ENET_HOST_TO_NET_16(rand1 ^ port);
-			newHeader->integrity[2] = ENET_NET_TO_HOST_16(rand2 & 0xF7DF | 0x9005);
+			newHeader->integrity[2] = ENET_NET_TO_HOST_16(rand2 & 0x61D2 | 0x920D);
 		}
 
 		ENetPeer* currentPeer;

@@ -9,20 +9,22 @@
 #include <server/http_server.hpp>
 
 #include <utils/string_split.hpp>
-#include <utils/discord.hpp>
+// #include <utils/discord.hpp> // Temporarily disabled
 #include <utils/http_get.hpp>
 #include <utils/containsignorecase.hpp>
 #include <utils/generate_rid.hpp>
+#include <utils/growtopia_auth.hpp>
 
 #include <enet/enet.h>
 #include <cpprest/http_listener.h>
 
-std::string discord_uid;
-std::string discord_name;
+// std::string discord_uid; // Temporarily disabled
+// std::string discord_name; // Temporarily disabled
 
 int main() {
+    std::cout << "\n=== Starting HTTP API Server ===" << std::endl;
     std::cout << generate_rid() << std::endl;
-    init_discord_rpc();
+    // init_discord_rpc(); // Temporarily disabled
     if (!item_database->initialize("items.dat"))
         return EXIT_FAILURE;
 
@@ -53,7 +55,7 @@ int main() {
             for (auto client : server.get_client_pool()->get_clients()) {
                 client->service_poll();
             }
-            Discord_RunCallbacks();
+            // Discord_RunCallbacks(); // Temporarily disabled
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }

@@ -1,0 +1,332 @@
+---
+# Clang-Tidy configuration for Growtopia Bot
+# Comprehensive checks for code quality, performance, and best practices
+
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  google-*,
+  hicpp-*,
+  llvm-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-exception-escape,
+  -cert-dcl21-cpp,
+  -cert-dcl58-cpp,
+  -cert-err58-cpp,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-const-cast,
+  -cppcoreguidelines-pro-type-cstyle-cast,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-pro-type-vararg,
+  -google-build-using-namespace,
+  -google-readability-braces-around-statements,
+  -google-readability-namespace-comments,
+  -google-runtime-references,
+  -hicpp-braces-around-statements,
+  -hicpp-named-parameter,
+  -hicpp-no-array-decay,
+  -hicpp-special-member-functions,
+  -hicpp-uppercase-literal-suffix,
+  -hicpp-use-auto,
+  -hicpp-vararg,
+  -llvm-header-guard,
+  -llvm-include-order,
+  -misc-non-private-member-variables-in-classes,
+  -modernize-use-trailing-return-type,
+  -readability-braces-around-statements,
+  -readability-magic-numbers,
+  -readability-named-parameter,
+  -readability-uppercase-literal-suffix
+
+# Warning options
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*'
+AnalyzeTemporaryDtors: false
+FormatStyle: file
+
+# Check options
+CheckOptions:
+  - key: bugprone-argument-comment.StrictMode
+    value: '0'
+  - key: bugprone-assert-side-effect.AssertMacros
+    value: 'assert,ASSERT'
+  - key: bugprone-string-constructor.WarnOnLargeLength
+    value: '1'
+  - key: bugprone-too-small-loop-variable.MagnitudeBitsUpperLimit
+    value: '16'
+  - key: cert-dcl16-c.NewSuffixes
+    value: 'L;LL;LU;LLU'
+  - key: cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField
+    value: '0'
+  - key: cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
+    value: '1'
+  - key: cppcoreguidelines-narrowing-conversions.WarnOnFloatingPointNarrowingConversion
+    value: '1'
+  - key: cppcoreguidelines-narrowing-conversions.WarnOnIntegerNarrowingConversion
+    value: '1'
+  - key: cppcoreguidelines-narrowing-conversions.WarnOnIntegerToFloatingPointNarrowingConversion
+    value: '1'
+  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
+    value: '1'
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: '1'
+  - key: google-readability-function-size.StatementThreshold
+    value: '800'
+  - key: google-readability-namespace-comments.ShortNamespaceLines
+    value: '10'
+  - key: google-readability-namespace-comments.SpacesBeforeComments
+    value: '2'
+  - key: hicpp-function-size.LineThreshold
+    value: '100'
+  - key: hicpp-function-size.StatementThreshold
+    value: '800'
+  - key: hicpp-member-init.IgnoreArrays
+    value: '1'
+  - key: hicpp-move-constructor-init.IncludeStyle
+    value: 'google'
+  - key: hicpp-multiway-paths-covered.WarnOnMissingElse
+    value: '1'
+  - key: llvm-namespace-comment.ShortNamespaceLines
+    value: '1'
+  - key: llvm-namespace-comment.SpacesBeforeComments
+    value: '1'
+  - key: misc-definitions-in-headers.UseHeaderFileExtension
+    value: '1'
+  - key: misc-throw-by-value-catch-by-reference.CheckThrowTemporaries
+    value: '1'
+  - key: misc-unused-parameters.StrictMode
+    value: '1'
+  - key: modernize-loop-convert.MaxCopySize
+    value: '16'
+  - key: modernize-loop-convert.MinConfidence
+    value: 'reasonable'
+  - key: modernize-loop-convert.NamingStyle
+    value: 'CamelCase'
+  - key: modernize-pass-by-value.IncludeStyle
+    value: 'google'
+  - key: modernize-replace-auto-ptr.IncludeStyle
+    value: 'google'
+  - key: modernize-use-auto.MinTypeNameLength
+    value: '5'
+  - key: modernize-use-auto.RemoveStars
+    value: '0'
+  - key: modernize-use-default-member-init.IgnoreArrays
+    value: '1'
+  - key: modernize-use-default-member-init.UseAssignment
+    value: '1'
+  - key: modernize-use-emplace.ContainersWithPushBack
+    value: '::std::vector;::std::list;::std::deque'
+  - key: modernize-use-emplace.SmartPointers
+    value: '::std::shared_ptr;::std::unique_ptr;::std::auto_ptr;::std::weak_ptr'
+  - key: modernize-use-emplace.TupleMakeFunctions
+    value: '::std::make_pair;::std::make_tuple'
+  - key: modernize-use-emplace.TupleTypes
+    value: '::std::pair;::std::tuple'
+  - key: modernize-use-equals-default.IgnoreMacros
+    value: '1'
+  - key: modernize-use-equals-delete.IgnoreMacros
+    value: '1'
+  - key: modernize-use-nodiscard.ReplacementString
+    value: '[[nodiscard]]'
+  - key: modernize-use-nullptr.NullMacros
+    value: 'NULL'
+  - key: modernize-use-override.AllowOverrideAndFinal
+    value: '0'
+  - key: modernize-use-override.FinalSpelling
+    value: 'final'
+  - key: modernize-use-override.IgnoreDestructors
+    value: '1'
+  - key: modernize-use-override.OverrideSpelling
+    value: 'override'
+  - key: modernize-use-using.IgnoreMacros
+    value: '1'
+  - key: performance-faster-string-find.StringLikeClasses
+    value: '::std::basic_string;::std::basic_string_view'
+  - key: performance-for-range-copy.AllowedTypes
+    value: ''
+  - key: performance-for-range-copy.WarnOnAllAutoCopies
+    value: '0'
+  - key: performance-inefficient-string-concatenation.StrictMode
+    value: '0'
+  - key: performance-inefficient-vector-operation.EnableProto
+    value: '0'
+  - key: performance-move-const-arg.CheckTriviallyCopyableMove
+    value: '1'
+  - key: performance-move-constructor-init.IncludeStyle
+    value: 'google'
+  - key: performance-no-automatic-move.AllowedTypes
+    value: ''
+  - key: performance-type-promotion-in-math-fn.IncludeStyle
+    value: 'google'
+  - key: performance-unnecessary-copy-initialization.AllowedTypes
+    value: ''
+  - key: performance-unnecessary-value-param.AllowedTypes
+    value: ''
+  - key: performance-unnecessary-value-param.IncludeStyle
+    value: 'google'
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: '1'
+  - key: readability-function-cognitive-complexity.IgnoreMacros
+    value: '1'
+  - key: readability-function-cognitive-complexity.Threshold
+    value: '25'
+  - key: readability-function-size.BranchThreshold
+    value: '4294967295'
+  - key: readability-function-size.LineThreshold
+    value: '4294967295'
+  - key: readability-function-size.NestingThreshold
+    value: '4294967295'
+  - key: readability-function-size.ParameterThreshold
+    value: '4294967295'
+  - key: readability-function-size.StatementThreshold
+    value: '800'
+  - key: readability-function-size.VariableThreshold
+    value: '4294967295'
+  - key: readability-identifier-naming.AbstractClassCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.ClassCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.ClassConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.ClassMemberCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ClassMethodCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.ConstantMemberCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ConstantParameterCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ConstantPointerParameterCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ConstexprFunctionCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ConstexprMethodCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.EnumCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.EnumConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.FunctionCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.GlobalConstantPointerCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.GlobalFunctionCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.GlobalPointerCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.InlineNamespaceCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.LocalConstantCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.LocalConstantPointerCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.LocalPointerCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.LocalVariableCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.MemberCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.MethodCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.NamespaceCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.ParameterCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ParameterPackCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.PointerParameterCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.PrivateMemberSuffix
+    value: '_'
+  - key: readability-identifier-naming.PrivateMethodCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ProtectedMemberCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ProtectedMemberSuffix
+    value: '_'
+  - key: readability-identifier-naming.ProtectedMethodCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.PublicMemberCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.PublicMethodCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ScopedEnumConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.StaticConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.StaticVariableCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.StructCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.TemplateParameterCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.TemplateTemplateParameterCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.TypeAliasCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.TypedefCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.TypeTemplateParameterCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.UnionCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.ValueTemplateParameterCase
+    value: 'CamelCase'
+  - key: readability-identifier-naming.VariableCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.VirtualMethodCase
+    value: 'lower_case'
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: '1'
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: '1'
+  - key: readability-inconsistent-declaration-parameter-name.IgnoreMacros
+    value: '1'
+  - key: readability-inconsistent-declaration-parameter-name.Strict
+    value: '0'
+  - key: readability-redundant-declaration.IgnoreMacros
+    value: '1'
+  - key: readability-redundant-member-init.IgnoreBaseInCopyConstructors
+    value: '0'
+  - key: readability-redundant-smartptr-get.IgnoreMacros
+    value: '1'
+  - key: readability-redundant-string-init.StringNames
+    value: '::std::basic_string;::std::basic_string_view'
+  - key: readability-simplify-subscript-expr.Types
+    value: '::std::basic_string;::std::basic_string_view;::std::vector;::std::array'
+  - key: readability-static-accessed-through-instance.NameSpecifierNestingThreshold
+    value: '3'
+  - key: readability-uppercase-literal-suffix.IgnoreMacros
+    value: '1'
+  - key: readability-uppercase-literal-suffix.NewSuffixes
+    value: ''
+
+# System headers to ignore
+SystemHeaders: false
